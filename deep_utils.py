@@ -67,8 +67,9 @@ def read_data(data_folderpath):
     '''Reads full dataset.  Assumes data has been resized.
     Assumes "data_folderpath" contains subfolders corresponding
     to class names and each containing jpg files for class.'''
-    X=np.zeros((2*67,375,1242,3),dtype=np.uint8) #Full set: 67 for image02 and 67 for image03
-    y=np.zeros((2*67,375,1242),dtype=np.uint8)
+    num_images=32
+    X=np.zeros((num_images,375,1242,3),dtype=np.uint8) #Full set: 67 for image02 and 67 for image03
+    y=np.zeros((num_images,375,1242),dtype=np.uint8)
     
     #Append folderpaths if needed
     if data_folderpath.endswith('\\')==False:
