@@ -73,13 +73,13 @@ def larger_model():
 	model.add(Flatten())
 #	model.add(Dense(128, activation='relu',init='he_normal'))
 #	model.add(Dropout(0.5))
-	model.add(Dense(128, activation='relu',init='he_normal'))
-	model.add(Dropout(0.5))
-	model.add(Dense(128, activation='relu',init='he_normal'))
-	model.add(Dropout(0.5))
+#	model.add(Dense(128, activation='relu',init='he_normal'))
+#	model.add(Dropout(0.5))
+#	model.add(Dense(128, activation='relu',init='he_normal'))
+#	model.add(Dropout(0.5))
 	model.add(Dense(64, activation='relu',init='he_normal'))
 	#model.add(Flatten())	
-	model.add(Dense(1242*375, activation='softmax'))
+	model.add(Dense(1242*375,activation='tanh')) #, activation='softmax'
 	model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
 	return model
 
@@ -89,7 +89,7 @@ model = larger_model()
 print(model.summary())
 print('Fitting model')
 # Fit the model
-history=model.fit(X_train, y_train,validation_data=(X_test, y_test), nb_epoch=5, batch_size=2, verbose=2)
+history=model.fit(X_train, y_train,validation_data=(X_test, y_test), nb_epoch=15, batch_size=16, verbose=2)
 
 finish=time.time()
 elapsed=finish-start
@@ -99,11 +99,18 @@ deep_utils.plot_accuracy(history)
 deep_utils.plot_loss(history)
 
 #Show Image and predicted results
-for i in [0,5,10]:
-    image_depth.image_from_np(X_test[i]*255) #De-normalize for viewing
+for i in [0,5,10]:  
+    image_depth.image_from_np(np.multiply(X_test[i],255).astype(np.uint8))  #De-normalize for viewing
     test_image=X_test[i].reshape(1,X_test[i].shape[0],X_test[i].shape[1],X_test[i].shape[2])
     y_est=model.predict(test_image)
     y_est=y_est.reshape((X_train.shape[1],X_train.shape[2]))*255 #De-normalize for depth viewing
     image_depth.heatmap(y_est)
-    
+
+#Test new image
+test_image=image_depth.rgb_read(r"G:\Pictures\Pictures\resize2_CDM_05082017.jpg")
+test_image=X_test[i].reshape(1,X_test[i].shape[0],X_test[i].shape[1],X_test[i].shape[2])
+y_est=model.predict(test_image)
+y_est=y_est.reshape((X_train.shape[1],X_train.shape[2]))*255 #De-normalize for depth viewing
+image_depth.heatmap(y_est)
+
 #deep_utils.save_model(model,serialize_type='yaml',model_name='depth_estimation_cnn_model')

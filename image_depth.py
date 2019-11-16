@@ -31,7 +31,7 @@ def depth_read(filename):
     assert(np.max(depth_png) > 255)
 
     depth = depth_png.astype(np.float) / 256.
-    depth[depth_png == 0] = -1.
+    #depth[depth_png == 0] = -1.
     image.close()
     return depth
 
@@ -44,8 +44,10 @@ def heatmap(image):
         pic=Image.open(image)
         pic_array=np.array(pic)
     #Plot heatmap
-    plt.imshow(pic_array, cmap='plasma', interpolation='nearest')
+    plt.imshow(pic_array, cmap='binary', interpolation='nearest') #cmap=plasma
     plt.show()
     
 if __name__=='__main__':
-    heatmap(r"G:\Documents\KITTI\raw_data\2011_09_26\2011_09_26_drive_0002_sync\image_00\data\0000000005.png")
+    filename=r"G:\Documents\KITTI\sandbox\y_depth\2011_09_26_drive_0002_sync\proj_depth\groundtruth\image_02\0000000005.png"
+    heatmap(filename)
+    d=depth_read(filename)
