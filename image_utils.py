@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Image depth functions.
+Image Utility functions.
 """
 import numpy as np
 from PIL import Image

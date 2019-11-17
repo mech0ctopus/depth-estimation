@@ -7,7 +7,7 @@ import numpy as np
 from glob import glob
 import pickle
 import matplotlib.pyplot as plt
-from image_depth import depth_read, rgb_read
+from image_utils import depth_read, rgb_read
 import random
 
 def save_model(model,serialize_type,model_name='model'):
@@ -67,6 +67,7 @@ def read_data(data_folderpath,num_images):
     '''Reads full dataset.  Assumes data has been resized.
     Assumes "data_folderpath" contains subfolders corresponding
     to class names and each containing jpg files for class.'''
+    
     X=np.zeros((num_images,375,1242,3),dtype=np.uint8) #Full set: 67 for image02 and 67 for image03
     y=np.zeros((num_images,375,1242),dtype=np.uint8)
     
@@ -149,6 +150,16 @@ def plot_accuracy(history):
     plt.legend(['train', 'test'], loc='upper left')
     plt.show()
 
+def plot_mse(history):
+    '''Summarize history for mean-squared error (MSE)'''
+    plt.plot(history.history['mean_squared_error'])
+    plt.plot(history.history['val_mean_squared_error'])
+    plt.title('model MSE')
+    plt.ylabel('MSE')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+    
 def plot_loss(history):
     '''Summarize history for loss'''
     plt.plot(history.history['loss'])
