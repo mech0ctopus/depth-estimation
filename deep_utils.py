@@ -63,11 +63,10 @@ def load_pickle_files(X_file, y_file):
     y=pickle.load(open(y_file,'rb'))
     return X, y
 
-def read_data(data_folderpath):
+def read_data(data_folderpath,num_images):
     '''Reads full dataset.  Assumes data has been resized.
     Assumes "data_folderpath" contains subfolders corresponding
     to class names and each containing jpg files for class.'''
-    num_images=32
     X=np.zeros((num_images,375,1242,3),dtype=np.uint8) #Full set: 67 for image02 and 67 for image03
     y=np.zeros((num_images,375,1242),dtype=np.uint8)
     
@@ -94,8 +93,8 @@ def read_data(data_folderpath):
         [right_depth_images.append(path) for path in right_depth_paths]
         #Build list of image names we have depth data for
         y_image_names[count]=[filepath.split('\\')[-1] for filepath in left_depth_paths]
-        count+=0
-    
+        count+=1
+
     #Read Depth images
     count=0
     for depth_images in [left_depth_images,right_depth_images]:
@@ -118,7 +117,7 @@ def read_data(data_folderpath):
         for image_name in y_image_names[count]:
             left_rgb_images.append(left_rgb+image_name)
             right_rgb_images.append(right_rgb+image_name)
-        count+=0
+        count+=1
         
     #Read RGB images
     count=0
@@ -162,4 +161,5 @@ def plot_loss(history):
     
 if __name__ == '__main__':   
     dataset=r"G:\Documents\KITTI\sandbox"
-    X,y=read_data(dataset)
+    num_images=898
+    X,y=read_data(dataset,num_images)

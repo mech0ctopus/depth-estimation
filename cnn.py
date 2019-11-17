@@ -33,11 +33,7 @@ np.random.seed(seed)
 print('Loading data')
 #Load data from pickle files
 X,y=deep_utils.load_pickle_files(r"X.p", r"y.p")
-
-#X_train,y_train=deep_utils.load_pickle_files(r"X_train.p", r"y_train.p")
-#X_test,y_test=deep_utils.load_pickle_files(r"X_test.p", r"y_test.p")
-#X_train,y_train=simul_shuffle(X_train,y_train)
-#X_test,y_test=simul_shuffle(X_test,y_test)
+X,y=deep_utils.simul_shuffle(X,y)
 
 print('Splitting data')
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=seed,shuffle=True)
@@ -78,6 +74,9 @@ def larger_model():
 #	model.add(Dense(128, activation='relu',init='he_normal'))
 #	model.add(Dropout(0.5))
 	model.add(Dense(64, activation='relu',init='he_normal'))
+	model.add(Dropout(0.5))
+	model.add(Dense(64, activation='relu',init='he_normal'))
+	model.add(Dropout(0.5))
 	#model.add(Flatten())	
 	model.add(Dense(1242*375,activation='tanh')) #, activation='softmax'
 	model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
@@ -89,7 +88,7 @@ model = larger_model()
 print(model.summary())
 print('Fitting model')
 # Fit the model
-history=model.fit(X_train, y_train,validation_data=(X_test, y_test), nb_epoch=15, batch_size=16, verbose=2)
+history=model.fit(X_train, y_train,validation_data=(X_test, y_test), nb_epoch=5, batch_size=16, verbose=2)
 
 finish=time.time()
 elapsed=finish-start
@@ -99,7 +98,7 @@ deep_utils.plot_accuracy(history)
 deep_utils.plot_loss(history)
 
 #Show Image and predicted results
-for i in [0,5,10]:  
+for i in [0,25,50]:  
     image_depth.image_from_np(np.multiply(X_test[i],255).astype(np.uint8))  #De-normalize for viewing
     test_image=X_test[i].reshape(1,X_test[i].shape[0],X_test[i].shape[1],X_test[i].shape[2])
     y_est=model.predict(test_image)
