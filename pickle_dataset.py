@@ -21,6 +21,7 @@ import numpy as np
 from glob import glob
 from image_utils import depth_read, rgb_read
 import pickle
+from math import ceil
 
 def append_folderpath(folderpath):
     '''Adds '\\' to folderpath end if needed'''
@@ -52,17 +53,30 @@ def get_depth_paths(y_depth_subpath):
     
     return left_depth_paths, right_depth_paths
     
-def pickle_depth_images(subfolder,depth_paths,output_folderpath):
+def pickle_depth_images(subfolder,depth_paths,output_folderpath,max_array_len=200):
     '''Generates pickle file of y_depth data'''
     #Read depth images and update np.array
     num_images=len(depth_paths)
     y=np.zeros((num_images,375,1242),dtype=np.uint8)
     for idx, depth_path in enumerate(depth_paths):
         y[idx]=depth_read(depth_path)
-    #Save to pickle file
-    pickle.dump(y, open(output_folderpath+r"y_"+str(subfolder)+".p", "wb"), protocol=4)
-    #Clear y variable
-    y=None
+    
+    #Split data into smaller pickle files if necessary
+    num_intervals=ceil(num_images/max_array_len)
+    if num_intervals>1:
+        y_splits=np.array_split(y,num_intervals)
+        #Clear y variable
+        y=None
+        for idx, y_split in enumerate(y_splits):
+            #Save to pickle file
+            pickle.dump(y_split, open(output_folderpath+r"y_"+str(subfolder)+f"_{idx}.p", "wb"), protocol=4)
+            #Clear y_split variable
+        y_splits=None
+    else:
+        #Save to pickle file
+        pickle.dump(y, open(output_folderpath+r"y_"+str(subfolder)+".p", "wb"), protocol=4)
+        #Clear y variable
+        y=None
     
 def get_rgb_paths(X_rgb_subpath,left_depth_paths, right_depth_paths):
     '''Create list of RGB paths corresponding to input depth paths'''
@@ -82,18 +96,31 @@ def get_rgb_paths(X_rgb_subpath,left_depth_paths, right_depth_paths):
     
     return rgb_paths
  
-def pickle_rgb_images(subfolder,rgb_paths,output_folderpath):
+def pickle_rgb_images(subfolder,rgb_paths,output_folderpath,max_array_len=200):
     '''Generates pickle file of X_rgb data'''
     #Read RGB images and update np.array
     num_images=len(rgb_paths)
     X=np.zeros((num_images,375,1242,3),dtype=np.uint8)
     for idx, rgb_path in enumerate(rgb_paths):
         X[idx]=rgb_read(rgb_path)
-    #Save to pickle file
-    pickle.dump(X, open(output_folderpath+r"X_"+str(subfolder)+".p", "wb"), protocol=4)
-    #Clear X variable
-    X=None
-    
+        
+    #Split data into smaller pickle files if necessary
+    num_intervals=ceil(num_images/max_array_len)
+    if num_intervals>1:
+        X_splits=np.array_split(X,num_intervals)
+        #Clear X variable
+        X=None
+        for idx, X_split in enumerate(X_splits):
+            #Save to pickle file
+            pickle.dump(X_split, open(output_folderpath+r"X_"+str(subfolder)+f"_{idx}.p", "wb"), protocol=4)
+            #Clear X_split variable
+        X_splits=None
+    else:
+        #Save to pickle file
+        pickle.dump(X, open(output_folderpath+r"X_"+str(subfolder)+".p", "wb"), protocol=4)
+        #Clear X variable
+        X=None
+        
 def pickle_folder(data_folderpath,subfolder,output_folderpath):
     '''Reads and pickles one folder from KITTI.  
     Save X, y folder pair as pickle files.'''
@@ -124,6 +151,6 @@ def pickle_dataset(data_folderpath,output_folderpath):
         pickle_folder(data_folderpath,subfolder,output_folderpath)
     
 if __name__ == '__main__':   
-    dataset=r"G:\Documents\KITTI\sandbox"
-    output_folderpath=r"G:\Documents\KITTI\pickled_KITTI"
+    dataset=r"G:\Documents\KITTI\sandbox_val"
+    output_folderpath=r"G:\Documents\KITTI\pickled_KITTI\validation"
     pickle_dataset(dataset,output_folderpath)
