@@ -1,5 +1,5 @@
 # depth-estimation
-Depth Estimation from a Monovision Camera using Deep Neural Networks
+Depth Estimation from a Monovision Camera using a Deep Neural Network
 
 ### Utilities
 - deep_utils.py
