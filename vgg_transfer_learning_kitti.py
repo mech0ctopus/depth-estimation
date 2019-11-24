@@ -1,12 +1,12 @@
-# Kyle J. Cantrell & Craig D. Miller
-# kjcantrell@wpi.edu & cmiller@wpi.edu
-# Deep Learning for Advanced Robot Perception
-#
-# Depth Estimation from RGB Images
+# -*- coding: utf-8 -*-
+"""
+VGG transfer learning with KITTI dataset
 
+https://riptutorial.com/keras/example/32608/transfer-learning-using-keras-and-vgg
+"""
 import numpy as np
-#from keras.callbacks import ModelCheckpoint
-from keras.models import Sequential
+from keras import applications
+from keras.models import Model
 from keras.layers import Dense
 from keras.layers import Dropout
 from keras.layers import Flatten
@@ -14,12 +14,10 @@ from keras.layers.convolutional import Convolution2D
 from keras.layers.convolutional import MaxPooling2D
 import deep_utils
 import image_utils
-#from sklearn.model_selection import train_test_split
 import tensorflow as tf
 import time
 from glob import glob
 
-start=time.time()
 #Initialize tensorflow GPU settings
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.85)
 config = tf.ConfigProto(gpu_options=gpu_options)
@@ -28,48 +26,43 @@ session = tf.Session(config=config)
 # fix random seed for reproducibility
 seed = 7
 np.random.seed(seed)
+start=time.time()
 
-def larger_model():
-	'''Define network model'''
-	model = Sequential()
-	model.add(Convolution2D(30, 5, 5, border_mode='valid', input_shape=(375,1242,3), activation='relu')) #X_train.shape[1], X_train.shape[2], X_train.shape[3]
-	model.add(MaxPooling2D(pool_size=(2, 2)))
-	model.add(Convolution2D(15, 3, 3, activation='relu'))
-	model.add(MaxPooling2D(pool_size=(2, 2)))
-	model.add(Dropout(0.5))
-	model.add(Flatten())
-#	model.add(Dense(128, activation='relu',kernel_initializer='he_normal'))
-#	model.add(Dropout(0.5))
-#	model.add(Dense(128, activation='relu',kernel_initializer='he_normal'))
-#	model.add(Dropout(0.5))
-#	model.add(Dense(128, activation='relu',kernel_initializer='he_normal'))
-#	model.add(Dropout(0.5))
-#	model.add(Dense(64, activation='relu',kernel_initializer='he_normal'))
-#	model.add(Dropout(0.5))
-	model.add(Dense(64, activation='relu',kernel_initializer='he_normal'))
-	model.add(Dropout(0.5))
-	#model.add(Flatten())	
-	model.add(Dense(375*1242,activation='tanh')) #, activation='softmax' #X_train.shape[1]*X_train.shape[2]
-	model.compile(loss='mean_squared_error', optimizer='adam') #metrics=['mse']
-	return model
+vgg_model = applications.VGG19(weights='imagenet',
+                               include_top=False,
+                               input_shape=(375, 1242, 3))
 
-def lenet5_model():
-	# Update to LeNet-5 architecture
-	model = Sequential()
-	model.add(Convolution2D(filters=6, kernel_size=(5, 5), strides=(1, 1), activation='relu',input_shape=(375,1242,3)))
-	model.add(MaxPooling2D(pool_size=(2, 2), strides=(1, 1)))
-	model.add(Convolution2D(filters=16, kernel_size=(5, 5), strides=(1, 1), activation='relu'))
-	model.add(MaxPooling2D(pool_size=(2, 2), strides=(1, 1)))
-	model.add(Flatten())
-	model.add(Dense(units=120, activation='relu'))
-	model.add(Dropout(0.2))
-	model.add(Dense(units=84, activation='relu'))
-	model.add(Dropout(0.2))
-	model.add(Dense(375*1242, activation='softmax'))
+# Creating dictionary that maps layer names to the layers
+layer_dict = dict([(layer.name, layer) for layer in vgg_model.layers])
 
-	# Compile model
-	model.compile(loss='mean_squared_error', optimizer='adam')
-	return model
+# Getting output tensor of the last VGG layer that we want to include
+x = layer_dict['block2_pool'].output
+
+# Stacking a new simple convolutional network on top of it    
+x = Convolution2D(filters=6, kernel_size=(3, 3), activation='relu')(x)
+x = MaxPooling2D(pool_size=(2, 2))(x)
+#x = Convolution2D(15, 3, 3, activation='relu')(x)
+#x = MaxPooling2D(pool_size=(2, 2))(x)
+#x = Dropout(0.5)(x)
+x = Flatten()(x)
+x = Dense(1096, activation='relu')(x)
+x = Dropout(0.5)(x)
+x = Dense(512, activation='relu')(x)
+x = Dropout(0.5)(x)
+x = Dense(128, activation='relu')(x)
+x = Dropout(0.5)(x)
+x = Dense(375*1242, activation='tanh')(x)
+
+# Creating new model. Please note that this is NOT a Sequential() model.
+custom_model = Model(input=vgg_model.input, output=x)
+
+# Make sure that the pre-trained bottom layers are not trainable
+for layer in custom_model.layers[:7]:
+    layer.trainable = False
+
+# Do not forget to compile it
+custom_model.compile(loss='mean_squared_error',
+                     optimizer='adam',)
 
 val_pickle_files_folderpath=r"G:\Documents\KITTI\pickled_KITTI\validation"
 X_test_files=glob(val_pickle_files_folderpath+'\\X_*')
@@ -98,13 +91,6 @@ for i in range(num_training_batches):
     X_train,y_train=deep_utils.load_pickle_files(X_files[i], y_files[i])
     X_train,y_train=deep_utils.simul_shuffle(X_train,y_train)
     
-    print('Batch '+str(i)+': '+'Splitting data')
-    #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=seed,shuffle=True)
-    
-    #Clear variables for memory
-#    X=None
-#    y=None
-    
     print('Batch '+str(i)+': '+'Reshaping data') #[samples][width][height][pixels]
     X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], X_train.shape[2], X_train.shape[3]).astype(np.uint8)
     y_train = y_train.reshape((y_train.shape[0],1,-1)).astype(np.uint8)
@@ -124,27 +110,22 @@ for i in range(num_training_batches):
     # normalize inputs and outputs from 0-255 to 0-1
     X_train=np.divide(X_train,255).astype(np.float16)   
     y_train=np.divide(y_train,255).astype(np.float16)
-    
-    if i==0:
-        print('Building model')
-        #model = larger_model()
-        model = lenet5_model()
 
     print('Batch '+str(i)+': '+'Fitting model')
     #checkpointer = ModelCheckpoint(filepath='best_checkpoint_weights.hdf5', verbose=1, save_best_only=True)
-    history.append(model.fit(X_train, y_train,validation_data=(X_test, y_test), 
-                             epochs=5, batch_size=8, verbose=2,)) #callbacks=[checkpointer]))
+    history.append(custom_model.fit(X_train, y_train,validation_data=(X_test, y_test), 
+                             epochs=10, batch_size=8, verbose=2,)) #callbacks=[checkpointer]))
     
     #deep_utils.plot_accuracy(history)
     deep_utils.plot_loss(history[i])
     #deep_utils.plot_mse(history)
 
-print(model.summary())
+print(custom_model.summary())
 finish=time.time()
 elapsed=finish-start
 print('Runtime :'+str(elapsed)+' seconds')
 
-deep_utils.save_model(model,serialize_type='yaml',model_name='depth_estimation_cnn_model')
+deep_utils.save_model(custom_model,serialize_type='yaml',model_name='depth_estimation_cnn_model')
 
 deep_utils.plot_full_val_loss(history)
         
@@ -152,7 +133,7 @@ deep_utils.plot_full_val_loss(history)
 for i in [0,25,50]:  
     image_utils.image_from_np(np.multiply(X_test[i],255).astype(np.uint8))  #De-normalize for viewing
     test_image=X_test[i].reshape(1,X_test[i].shape[0],X_test[i].shape[1],X_test[i].shape[2])
-    y_est=model.predict(test_image)
+    y_est=custom_model.predict(test_image)
     y_est=y_est.reshape((X_train.shape[1],X_train.shape[2]))*255 #De-normalize for depth viewing
     print('Sample image, X_test['+str(i)+']:')
     image_utils.heatmap(y_est)
@@ -160,7 +141,7 @@ for i in [0,25,50]:
 #Test new image
 test_image=image_utils.rgb_read(r"G:\Pictures\Pictures\resize2_CDM_05082017.jpg")
 test_image=test_image.reshape(1,X_test[0].shape[0],X_test[0].shape[1],X_test[0].shape[2])
-y_est=model.predict(test_image)
+y_est=custom_model.predict(test_image)
 y_est=y_est.reshape((X_train.shape[1],X_train.shape[2]))*255 #De-normalize for depth viewing
 print('New Test Image:')
 image_utils.heatmap(y_est)
