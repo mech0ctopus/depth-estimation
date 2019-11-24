@@ -101,14 +101,19 @@ def plot_loss(history):
 
 def plot_full_val_loss(history):
     '''Summarize history for loss'''
+    loss_history=[]
     val_loss_history=[]
     for h in history:
+        for item in h.history['loss']:
+            loss_history.append(item)
         for item in h.history['val_loss']:
             val_loss_history.append(item)
+    plt.plot(loss_history)
     plt.plot(val_loss_history)
     plt.title('Validation Loss')
     plt.ylabel('MSE')
     plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
     plt.show()
 
 if __name__ == '__main__':   
