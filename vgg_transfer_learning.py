@@ -18,6 +18,7 @@ from sklearn.model_selection import train_test_split
 import tensorflow as tf
 import time
 from glob import glob
+from keras import regularizers
 
 #Initialize tensorflow GPU settings
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.85)
@@ -40,17 +41,27 @@ layer_dict = dict([(layer.name, layer) for layer in vgg_model.layers])
 x = layer_dict['block2_pool'].output
 
 # Stacking a new simple convolutional network on top of it    
-x = Convolution2D(filters=6, kernel_size=(3, 3), activation='relu')(x)
+x = Convolution2D(filters=6, kernel_size=(3, 3), activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
 x = MaxPooling2D(pool_size=(2, 2))(x)
 #x = Convolution2D(15, 3, 3, activation='relu')(x)
 #x = MaxPooling2D(pool_size=(2, 2))(x)
 #x = Dropout(0.5)(x)
 x = Flatten()(x)
-x = Dense(128, activation='relu')(x)
+x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
 x = Dropout(0.5)(x)
-x = Dense(128, activation='relu')(x)
+x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
 x = Dropout(0.5)(x)
-x = Dense(480*640, activation='tanh')(x)
+x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
+x = Dropout(0.5)(x)
+x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
+x = Dropout(0.5)(x)
+x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
+x = Dropout(0.5)(x)
+x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
+x = Dropout(0.5)(x)
+x = Dense(128, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
+x = Dropout(0.5)(x)
+x = Dense(480*640, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x) #tanh #kernel_initializer='he_normal',
 
 # Creating new model. Please note that this is NOT a Sequential() model.
 custom_model = Model(input=vgg_model.input, output=x)
@@ -102,7 +113,7 @@ for i in range(num_training_batches):
     print('Batch '+str(i)+': '+'Fitting model')
     #checkpointer = ModelCheckpoint(filepath='best_checkpoint_weights.hdf5', verbose=1, save_best_only=True)
     history.append(custom_model.fit(X_train, y_train,validation_data=(X_test, y_test), 
-                             epochs=20, batch_size=8, verbose=2,)) #callbacks=[checkpointer]))
+                             epochs=15, batch_size=8, verbose=2,)) #callbacks=[checkpointer]))
     
     #deep_utils.plot_accuracy(history)
     deep_utils.plot_loss(history[i])

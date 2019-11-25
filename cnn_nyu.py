@@ -49,7 +49,7 @@ def model1():
 	model.add(Dense(64, activation='relu',kernel_initializer='he_normal'))
 	model.add(Dropout(0.5))
 	#model.add(Flatten())	
-	model.add(Dense(480*640,activation='tanh',kernel_initializer='he_normal')) #, activation='softmax' #X_train.shape[1]*X_train.shape[2]
+	model.add(Dense(480*640,activation='relu',kernel_initializer='he_normal')) #tanh, activation='softmax' #X_train.shape[1]*X_train.shape[2]
 	model.compile(loss='mean_squared_error', optimizer='adam') #metrics=['mse']
 	return model
 
@@ -111,7 +111,7 @@ for i in range(num_training_batches):
     
     if i==0:
         print('Building model')
-        model = model2()
+        model = model1()
 
     print('Batch '+str(i)+': '+'Fitting model')
     #checkpointer = ModelCheckpoint(filepath='best_checkpoint_weights.hdf5', verbose=1, save_best_only=True)
