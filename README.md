@@ -8,5 +8,6 @@ Depth Estimation from a Monovision Camera using a Deep Neural Network
 - rosbag_utils.py
 
 ### Dataset
-- [KITTI](http://www.cvlibs.net/datasets/kitti/eval_depth.php?benchmark=depth_prediction)
 - [FieldSAFE](https://vision.eng.au.dk/fieldsafe/)
+- [KITTI](http://www.cvlibs.net/datasets/kitti/eval_depth.php?benchmark=depth_prediction)
+- [NYU Depth Dataset V2](https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html)
