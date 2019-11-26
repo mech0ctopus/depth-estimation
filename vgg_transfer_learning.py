@@ -32,7 +32,7 @@ start=time.time()
 
 vgg_model = applications.VGG19(weights='imagenet',
                                include_top=False,
-                               input_shape=(480, 640, 3))
+                               input_shape=(480,640,3))
 
 # Creating dictionary that maps layer names to the layers
 layer_dict = dict([(layer.name, layer) for layer in vgg_model.layers])
@@ -41,16 +41,16 @@ layer_dict = dict([(layer.name, layer) for layer in vgg_model.layers])
 x = layer_dict['block2_pool'].output
 
 # Stacking a new simple convolutional network on top of it    
-x = Convolution2D(filters=6, kernel_size=(3, 3), activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
+x = Convolution2D(filters=15, kernel_size=(3, 3), activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
 x = MaxPooling2D(pool_size=(2, 2))(x)
 #x = Convolution2D(15, 3, 3, activation='relu')(x)
 #x = MaxPooling2D(pool_size=(2, 2))(x)
 #x = Dropout(0.5)(x)
 x = Flatten()(x)
-x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
-x = Dropout(0.5)(x)
-x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
-x = Dropout(0.5)(x)
+#x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
+#x = Dropout(0.5)(x)
+#x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
+#x = Dropout(0.5)(x)
 x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
 x = Dropout(0.5)(x)
 x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
@@ -113,7 +113,7 @@ for i in range(num_training_batches):
     print('Batch '+str(i)+': '+'Fitting model')
     #checkpointer = ModelCheckpoint(filepath='best_checkpoint_weights.hdf5', verbose=1, save_best_only=True)
     history.append(custom_model.fit(X_train, y_train,validation_data=(X_test, y_test), 
-                             epochs=15, batch_size=8, verbose=2,)) #callbacks=[checkpointer]))
+                             epochs=2, batch_size=4, verbose=2,)) #callbacks=[checkpointer]))
     
     #deep_utils.plot_accuracy(history)
     deep_utils.plot_loss(history[i])
@@ -129,7 +129,7 @@ deep_utils.save_model(custom_model,serialize_type='yaml',model_name='depth_estim
 deep_utils.plot_full_val_loss(history)
         
 #Show Image and predicted results
-for i in [0,1,2,3,4]:  
+for i in [0,1]:  
     image_utils.image_from_np(np.multiply(X_test[i],255).astype(np.uint8))  #De-normalize for viewing
     test_image=X_test[i].reshape(1,X_test[i].shape[0],X_test[i].shape[1],X_test[i].shape[2])
     y_est=custom_model.predict(test_image)

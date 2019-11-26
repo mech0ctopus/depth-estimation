@@ -38,18 +38,18 @@ def model1():
 	model.add(MaxPooling2D(pool_size=(2, 2)))
 	model.add(Dropout(0.5))
 	model.add(Flatten())
-	model.add(Dense(128, activation='relu',kernel_initializer='he_normal'))
+	model.add(Dense(128, activation='relu'))
 	model.add(Dropout(0.5))
-	model.add(Dense(128, activation='relu',kernel_initializer='he_normal'))
+	model.add(Dense(128, activation='relu'))
 	model.add(Dropout(0.5))
-	model.add(Dense(128, activation='relu',kernel_initializer='he_normal'))
+	model.add(Dense(128, activation='relu'))
 	model.add(Dropout(0.5))
-	model.add(Dense(64, activation='relu',kernel_initializer='he_normal'))
+	model.add(Dense(64, activation='relu'))
 	model.add(Dropout(0.5))
-	model.add(Dense(64, activation='relu',kernel_initializer='he_normal'))
+	model.add(Dense(64, activation='relu'))
 	model.add(Dropout(0.5))
 	#model.add(Flatten())	
-	model.add(Dense(480*640,activation='relu',kernel_initializer='he_normal')) #tanh, activation='softmax' #X_train.shape[1]*X_train.shape[2]
+	model.add(Dense(480*640,activation='relu')) #tanh, activation='softmax' #X_train.shape[1]*X_train.shape[2]
 	model.compile(loss='mean_squared_error', optimizer='adam') #metrics=['mse']
 	return model
 
@@ -116,7 +116,7 @@ for i in range(num_training_batches):
     print('Batch '+str(i)+': '+'Fitting model')
     #checkpointer = ModelCheckpoint(filepath='best_checkpoint_weights.hdf5', verbose=1, save_best_only=True)
     history.append(model.fit(X_train, y_train,validation_data=(X_test, y_test), 
-                             epochs=10, batch_size=32, verbose=2,)) #callbacks=[checkpointer]))
+                             epochs=2, batch_size=4, verbose=2,)) #callbacks=[checkpointer]))
     
     #deep_utils.plot_accuracy(history)
     deep_utils.plot_loss(history[i])

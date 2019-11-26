@@ -12,11 +12,13 @@ from keras.layers import Dropout
 from keras.layers import Flatten
 from keras.layers.convolutional import Convolution2D
 from keras.layers.convolutional import MaxPooling2D
+from keras.layers import PReLU
 import deep_utils
 import image_utils
 import tensorflow as tf
 import time
 from glob import glob
+from keras import regularizers
 
 #Initialize tensorflow GPU settings
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.85)
@@ -39,19 +41,23 @@ layer_dict = dict([(layer.name, layer) for layer in vgg_model.layers])
 x = layer_dict['block2_pool'].output
 
 # Stacking a new simple convolutional network on top of it    
-x = Convolution2D(filters=6, kernel_size=(3, 3), activation='relu')(x)
+x = Convolution2D(filters=6, kernel_size=(3, 3), activation=PReLU())(x)
 x = MaxPooling2D(pool_size=(2, 2))(x)
 #x = Convolution2D(15, 3, 3, activation='relu')(x)
 #x = MaxPooling2D(pool_size=(2, 2))(x)
 #x = Dropout(0.5)(x)
 x = Flatten()(x)
-x = Dense(1096, activation='relu')(x)
+x = Dense(512, activation=PReLU(),kernel_regularizer=regularizers.l2(0.01))(x)
 x = Dropout(0.5)(x)
-x = Dense(512, activation='relu')(x)
+x = Dense(512, activation=PReLU(),kernel_regularizer=regularizers.l2(0.01))(x)
 x = Dropout(0.5)(x)
-x = Dense(128, activation='relu')(x)
+x = Dense(512, activation=PReLU(),kernel_regularizer=regularizers.l2(0.01))(x)
 x = Dropout(0.5)(x)
-x = Dense(375*1242, activation='tanh')(x)
+x = Dense(512, activation=PReLU(),kernel_regularizer=regularizers.l2(0.01))(x)
+x = Dropout(0.5)(x)
+x = Dense(128, activation=PReLU(),kernel_regularizer=regularizers.l2(0.01))(x)
+x = Dropout(0.5)(x)
+x = Dense(375*1242, activation=PReLU())(x)
 
 # Creating new model. Please note that this is NOT a Sequential() model.
 custom_model = Model(input=vgg_model.input, output=x)
@@ -114,7 +120,7 @@ for i in range(num_training_batches):
     print('Batch '+str(i)+': '+'Fitting model')
     #checkpointer = ModelCheckpoint(filepath='best_checkpoint_weights.hdf5', verbose=1, save_best_only=True)
     history.append(custom_model.fit(X_train, y_train,validation_data=(X_test, y_test), 
-                             epochs=10, batch_size=8, verbose=2,)) #callbacks=[checkpointer]))
+                             epochs=2, batch_size=4, verbose=2,)) #callbacks=[checkpointer]))
     
     #deep_utils.plot_accuracy(history)
     deep_utils.plot_loss(history[i])
@@ -130,7 +136,7 @@ deep_utils.save_model(custom_model,serialize_type='yaml',model_name='depth_estim
 deep_utils.plot_full_val_loss(history)
         
 #Show Image and predicted results
-for i in [0,25,50]:  
+for i in [0,1,10]:  
     image_utils.image_from_np(np.multiply(X_test[i],255).astype(np.uint8))  #De-normalize for viewing
     test_image=X_test[i].reshape(1,X_test[i].shape[0],X_test[i].shape[1],X_test[i].shape[2])
     y_est=custom_model.predict(test_image)
