@@ -12,18 +12,17 @@ from deep_utils import load_model
 #from PIL import Image
 import numpy as np
 import cv2
-#from scipy.misc import imsave
 from tqdm import tqdm
 
 K.set_learning_phase(1)
 #Configuration:
 img_width, img_height = 480, 640
 input_shape = (img_width, img_height, 3)
-num_filters = 5
+num_filters = 4
 iterations = 10
 weights_path = r"depth_estimation_cnn_nyu_model.h5"
-#img_path = r'cifar10_in.png'
-img_path=None
+img_path = r"C:\Users\Craig\Documents\GitHub\depth-estimation\unet_visualization\test_image\rgb_35.png"
+#img_path=None
 filter_indexes = range(0, num_filters)
 
 def save_filters(filters, img_width, img_height, layer_name):
@@ -152,7 +151,7 @@ for layer_name in layer_names:
         init_img = np.random.random((1, img_width, img_height, 3)) * 20 + 32.
     else:
         img = cv2.imread(img_path)
-        img = cv2.resize(img, (img_width, img_height))
+        img = cv2.resize(img, (img_height,img_width))
         init_img = [img]
     
     vizualizations = [None] * len(filter_indexes)
