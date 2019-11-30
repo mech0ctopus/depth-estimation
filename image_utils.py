@@ -5,7 +5,14 @@ Image Utility functions.
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+import cv2
 
+def add_blur(im_array,ksize=12,sigmaColor=400,sigmaMax=700):
+    """
+    Adds bilateral filtering to blur objects but preserve edges
+    """
+    return cv2.bilateralFiltering(im_array,ksize,sigmaColor,sigmaMax)
+    
 def image_from_np(image_array,save=False):
     '''Plots RGB image from numpy array'''
     img = Image.fromarray(image_array, 'RGB')
