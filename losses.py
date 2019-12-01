@@ -10,6 +10,7 @@ n = 1242*375
 def sil(yTrue,yPred):
     """
     Scale-Invariant Loss
+    usage: model.compile(loss=sil,...)
     """
     if not K.is_tensor(yPred):
         yPred = K.constant(yPred)
@@ -17,8 +18,8 @@ def sil(yTrue,yPred):
     first_log = K.log(K.clip(yPred, K.epsilon(), None) + 1.)
     second_log = K.log(K.clip(yTrue, K.epsilon(), None) + 1.)
     di = first_log - second_log
-    term1 = K.sum(K.square(di),axis=-1)
-    term2 = K.square(K.sum(di),axis=-1)
+    term1 = K.sum(K.square(di))
+    term2 = K.square(K.sum(di))
     return (1/n)*(term1) - (0.5/(n*n))*term2
 
 
