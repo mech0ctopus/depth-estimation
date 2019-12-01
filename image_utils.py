@@ -7,6 +7,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import cv2
 
+
 def image_from_np(image_array,save=False,rgb=True):
     '''Plots RGB or grayscale image from numpy array'''
     if rgb==True:
@@ -15,9 +16,12 @@ def image_from_np(image_array,save=False,rgb=True):
         #img = Image.fromarray(image_array, '1')
         img=cv2.imshow('image_from_np',image_array)
         cv2.waitKey(0)
-    if save==True:
-        img.save('image_from_np.png')
-    img.show()
+
+def add_blur(im_array,ksize=12,sigmaColor=400,sigmaMax=700):
+    """
+    Adds bilateral filtering to blur objects but preserve edges
+    """
+    return cv2.bilateralFiltering(im_array,ksize,sigmaColor,sigmaMax)
 
 def rgb_read(filename):
     '''Reads RGB image from png file and returns it as a numpy array'''
