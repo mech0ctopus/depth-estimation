@@ -38,11 +38,11 @@ vgg_model = applications.VGG19(weights='imagenet',
 layer_dict = dict([(layer.name, layer) for layer in vgg_model.layers])
 
 # Getting output tensor of the last VGG layer that we want to include
-x = layer_dict['block2_pool'].output
+x = layer_dict['block5_pool'].output #block2
 
 # Stacking a new simple convolutional network on top of it    
-x = Convolution2D(filters=15, kernel_size=(3, 3), activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
-x = MaxPooling2D(pool_size=(2, 2))(x)
+#x = Convolution2D(filters=16, kernel_size=(3, 3), activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
+#x = MaxPooling2D(pool_size=(2, 2))(x)
 #x = Convolution2D(15, 3, 3, activation='relu')(x)
 #x = MaxPooling2D(pool_size=(2, 2))(x)
 #x = Dropout(0.5)(x)
@@ -51,23 +51,25 @@ x = Flatten()(x)
 #x = Dropout(0.5)(x)
 #x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
 #x = Dropout(0.5)(x)
+#x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
+#x = Dropout(0.5)(x)
 x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
 x = Dropout(0.5)(x)
 x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
 x = Dropout(0.5)(x)
-x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
-x = Dropout(0.5)(x)
-x = Dense(512, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
+x = Dense(256, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
 x = Dropout(0.5)(x)
 x = Dense(128, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
 x = Dropout(0.5)(x)
-x = Dense(480*640, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x) #tanh #kernel_initializer='he_normal',
+x = Dense(64, activation='relu',kernel_regularizer=regularizers.l2(0.01))(x)
+x = Dropout(0.5)(x)
+x = Dense(480*640, activation='linear',kernel_regularizer=regularizers.l2(0.01))(x) #tanh #kernel_initializer='he_normal',
 
 # Creating new model. Please note that this is NOT a Sequential() model.
 custom_model = Model(input=vgg_model.input, output=x)
 
 # Make sure that the pre-trained bottom layers are not trainable
-for layer in custom_model.layers[:7]:
+for layer in custom_model.layers[:21]:
     layer.trainable = False
 
 # Do not forget to compile it
@@ -113,7 +115,7 @@ for i in range(num_training_batches):
     print('Batch '+str(i)+': '+'Fitting model')
     #checkpointer = ModelCheckpoint(filepath='best_checkpoint_weights.hdf5', verbose=1, save_best_only=True)
     history.append(custom_model.fit(X_train, y_train,validation_data=(X_test, y_test), 
-                             epochs=2, batch_size=4, verbose=2,)) #callbacks=[checkpointer]))
+                             epochs=5, batch_size=4, verbose=2,)) #callbacks=[checkpointer]))
     
     #deep_utils.plot_accuracy(history)
     deep_utils.plot_loss(history[i])

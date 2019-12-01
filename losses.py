@@ -4,16 +4,18 @@ Created on Sun Dec  1 17:46:34 2019
 LOSS Functions 
 @author: kjcantrell99
 """
-import keras.backend as k
-n = 1242*375
+import keras.backend as K
 
 def sil(yTrue,yPred):
     """
     Scale-Invariant Loss
     usage: model.compile(loss=sil,...)
     """
-    if not K.is_tensor(yPred):
-        yPred = K.constant(yPred)
+    n = 480*640
+#    if not K.is_tensor(yPred):
+#        yPred = K.constant(yPred)
+#    if not K.is_tensor(yPred):
+#    yPred = K.constant(yPred)
     yTrue = K.cast(yTrue, yPred.dtype)
     first_log = K.log(K.clip(yPred, K.epsilon(), None) + 1.)
     second_log = K.log(K.clip(yTrue, K.epsilon(), None) + 1.)

@@ -12,10 +12,12 @@ def image_from_np(image_array,save=False,rgb=True):
     '''Plots RGB or grayscale image from numpy array'''
     if rgb==True:
         img = Image.fromarray(image_array, 'RGB')
+        img.show()
     else:
         #img = Image.fromarray(image_array, '1')
         img=cv2.imshow('image_from_np',image_array)
         cv2.waitKey(0)
+    return img
 
 def add_blur(im_array,ksize=12,sigmaColor=400,sigmaMax=700):
     """
