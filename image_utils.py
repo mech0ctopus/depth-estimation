@@ -5,10 +5,16 @@ Image Utility functions.
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+import cv2
 
-def image_from_np(image_array,save=False):
-    '''Plots RGB image from numpy array'''
-    img = Image.fromarray(image_array, 'RGB')
+def image_from_np(image_array,save=False,rgb=True):
+    '''Plots RGB or grayscale image from numpy array'''
+    if rgb==True:
+        img = Image.fromarray(image_array, 'RGB')
+    else:
+        #img = Image.fromarray(image_array, '1')
+        img=cv2.imshow('image_from_np',image_array)
+        cv2.waitKey(0)
     if save==True:
         img.save('image_from_np.png')
     img.show()
@@ -28,7 +34,7 @@ def depth_read(filename):
     image=Image.open(filename)
     depth_png = np.array(image, dtype=int)
     # make sure we have a proper 16bit depth map here.. not 8bit!
-    assert(np.max(depth_png) > 255)
+    assert(np.max(depth_png) <= 255)
 
     depth = depth_png.astype(np.float) / 256.
     #depth[depth_png == 0] = -1.
@@ -44,7 +50,7 @@ def heatmap(image):
         pic=Image.open(image)
         pic_array=np.array(pic)
     #Plot heatmap
-    plt.imshow(pic_array, cmap='binary', interpolation='nearest') #cmap=plasma
+    plt.imshow(pic_array, cmap='gray', interpolation='nearest') #cmap=binary, plasma, gray
     plt.show()
     
 if __name__=='__main__':
