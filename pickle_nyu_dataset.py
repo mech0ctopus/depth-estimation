@@ -72,9 +72,9 @@ def read_data(data_folderpath,output_folderpath,num_intervals=35):
 if __name__ == '__main__':   
     #Pickled_new:
         #0-34: bathroom_0001-bathroom_0015 (bathroom part 1)
-        #35-40: Labeled Sample Dataset
+        #35-39: Labeled Sample Dataset
     #Pickled_test:
-        #0: Sample from labeled sample dataset for validation
+        #40: Sample from labeled sample dataset for validation
     #dataset=r"E:\NYU\nyud_raw_data\nyuv2-python-toolbox-master"
     #output_folderpath=r"G:\Documents\NYU Depth Dataset\nyu_data\pickled_new"
     #read_data(dataset,output_folderpath)

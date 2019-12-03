@@ -18,11 +18,11 @@ K.set_learning_phase(1)
 #Configuration:
 img_width, img_height = 480, 640
 input_shape = (img_width, img_height, 3)
-num_filters = 4
+num_filters = 9
 iterations = 10
-weights_path = r"depth_estimation_cnn_nyu_model.h5"
-img_path = r"C:\Users\Craig\Documents\GitHub\depth-estimation\unet_visualization\test_image\rgb_35.png"
-#img_path=None
+weights_path = r"C:\Users\Craig\Documents\GitHub\depth-estimation\TrainedModels\resnet_unet\depth_estimation_cnn_nyu_model_Round7.h5"
+#img_path = r"G:\Documents\NYU Depth Dataset\nyu_data\X_rgb\rgb_911.png"
+img_path=None
 filter_indexes = range(0, num_filters)
 
 def save_filters(filters, img_width, img_height, layer_name):
@@ -136,7 +136,8 @@ def visualize_filter(input_img, filter_index, img_placeholder, layer, number_of_
     return img
 
 #model = get_model(input_shape)
-model=load_model('depth_estimation_cnn_nyu_model.yaml','depth_estimation_cnn_nyu_model.h5')
+model=load_model(r"C:\Users\Craig\Documents\GitHub\depth-estimation\TrainedModels\resnet_unet\depth_estimation_cnn_nyu_model_Round7.yaml",
+                 r"C:\Users\Craig\Documents\GitHub\depth-estimation\TrainedModels\resnet_unet\depth_estimation_cnn_nyu_model_Round7.h5")
 layer_names=[layer.name for layer in model.layers]
 layer_names=[layer_name for layer_name in layer_names if 'conv' in layer_name]
 model.load_weights(weights_path)

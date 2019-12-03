@@ -111,7 +111,7 @@ def plot_full_val_loss(history):
     plt.plot(loss_history)
     plt.plot(val_loss_history)
     plt.title('Validation Loss')
-    plt.ylabel('MSE')
+    plt.ylabel('loss')
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
     plt.show()
