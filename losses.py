@@ -24,5 +24,11 @@ def sil(yTrue,yPred):
     term2 = K.square(K.sum(di))
     return (1/n)*(term1) - (0.5/(n*n))*term2
 
-
+def root_mean_squared_error(yTrue, yPred):
+    """
+    Root-Mean Square Error Loss
+    usage: model.compile(loss=root_mean_squared_error,...)
+    https://stackoverflow.com/questions/43855162/rmse-rmsle-loss-function-in-keras/43863854
+    """
+    return K.sqrt(K.mean(K.square(yPred - yTrue)))
 
