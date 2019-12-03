@@ -118,3 +118,21 @@ def wnet_connected():
     wnet_c.summary()
 
     return wnet_c
+
+def rcnn_640_480():
+   '''CNN First'''
+   cnn = Sequential()
+   cnn.add(Convolution2D(30, (10, 10),strides=(1,1), padding='valid', input_shape=(480, 640, 3), activation='relu'))
+   cnn.add(MaxPooling2D(pool_size=(4, 4)))
+   cnn.add(Dropout(0.5))
+   cnn.add(Convolution2D(15, (6, 6), activation='relu',strides=(1,1)))
+   cnn.add(MaxPooling2D(pool_size=(4, 4)))
+   cnn.add(Dropout(0.5))
+   cnn.add(Flatten())
+   cnn.add(Reshape((28, 38*15)))
+   cnn.add(LSTM(512,input_shape=(28,38*15),return_sequences=True))
+   cnn.add(Dense(512,activation='relu'))
+   cnn.add(LSTM(512))
+   cnn.add(Dense(128,activation='relu'))
+   cnn.add(Dense(640*480,activation='linear'))
+   return cnn
