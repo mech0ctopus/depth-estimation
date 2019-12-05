@@ -114,25 +114,39 @@ def wnet_connected():
     wnet_c.layers[3].trainable=True #Reshape
     wnet_c.layers[4].trainable=True #Second U
     wnet_c.layers[5].trainable=True #Reshape
-    wnet_c.compile(loss='mean_squared_error', optimizer=Adam())
+    wnet_c.compile(loss='mean_squared_error', optimizer=Adam()) #lr=1e-5
     wnet_c.summary()
 
     return wnet_c
 
-def rcnn_640_480():
-   '''CNN First'''
-   cnn = Sequential()
-   cnn.add(Convolution2D(30, (10, 10),strides=(1,1), padding='valid', input_shape=(480, 640, 3), activation='relu'))
-   cnn.add(MaxPooling2D(pool_size=(4, 4)))
-   cnn.add(Dropout(0.5))
-   cnn.add(Convolution2D(15, (6, 6), activation='relu',strides=(1,1)))
-   cnn.add(MaxPooling2D(pool_size=(4, 4)))
-   cnn.add(Dropout(0.5))
-   cnn.add(Flatten())
-   cnn.add(Reshape((28, 38*15)))
-   cnn.add(LSTM(512,input_shape=(28,38*15),return_sequences=True))
-   cnn.add(Dense(512,activation='relu'))
-   cnn.add(LSTM(512))
-   cnn.add(Dense(128,activation='relu'))
-   cnn.add(Dense(640*480,activation='linear'))
-   return cnn
+def rcnn_640_480(input_shape=(480,640,3)):
+   '''RCNN: CNN First'''
+   rcnn = Sequential()
+   rcnn.add(Convolution2D(30, (10, 10),strides=(1,1), padding='valid', input_shape=input_shape, activation='relu'))
+   rcnn.add(MaxPooling2D(pool_size=(4, 4)))
+   rcnn.add(Dropout(0.5))
+   rcnn.add(Convolution2D(15, (6, 6), activation='relu',strides=(1,1)))
+   rcnn.add(MaxPooling2D(pool_size=(4, 4)))
+   rcnn.add(Dropout(0.5))
+   rcnn.add(Flatten())
+   rcnn.add(Reshape((28, 38*15)))
+   rcnn.add(LSTM(512,input_shape=(28,38*15),return_sequences=True))
+   rcnn.add(Dense(512,activation='relu'))
+   rcnn.add(LSTM(512))
+   rcnn.add(Dense(128,activation='relu'))
+   rcnn.add(Dense(640*480,activation='linear'))
+   rcnn.compile(loss='mean_squared_error', optimizer=Adam())
+   return rcnn
+
+def pretrained_unet_rcnn():
+    '''Define pretrained U-Net with RCNN model.'''
+    unet_rcnn=Sequential()
+    #Load unet with resnet34 backbone.  Freeze imagenet weights for encoder
+    premodel = Unet('resnet34', input_shape=(480, 640, 3), encoder_weights='imagenet',encoder_freeze = True)
+    #Get final conv. output and skip sigmoid activation layer
+    premodel=Model(input=premodel.input,output=premodel.layers[-2].output)  
+    unet_rcnn.add(premodel)
+    unet_rcnn.add(rcnn_640_480(input_shape=(480,640,1)))
+
+    unet_rcnn.compile(loss='mean_squared_error', optimizer=Adam()) 
+    return unet_rcnn

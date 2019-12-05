@@ -47,7 +47,7 @@ def depth_read(filename):
     image.close()
     return depth
 
-def heatmap(image,save=False,name='heatmap'):
+def heatmap(image,save=False,name='heatmap',cmap='gray'):
     '''Plots heatmap of depth data from image or np.ndarray.'''
     if type(image)==np.ndarray:
         pic_array=image
@@ -56,10 +56,10 @@ def heatmap(image,save=False,name='heatmap'):
         pic=Image.open(image)
         pic_array=np.array(pic)
     #Plot heatmap
-    plt.imshow(pic_array, cmap='gray', interpolation='nearest') #cmap=binary, plasma, gray
+    plt.imshow(pic_array, cmap=cmap, interpolation='nearest') #cmap=binary, plasma, gray
     plt.show()
     if save==True:
-        plt.imsave(name+'.png',pic_array, cmap='gray')
+        plt.imsave(name+'.png',pic_array, cmap=cmap)
     
 if __name__=='__main__':
     filename=r"G:\Documents\KITTI\sandbox\y_depth\2011_09_26_drive_0002_sync\proj_depth\groundtruth\image_02\0000000005.png"
