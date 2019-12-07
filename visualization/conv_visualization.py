@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 """
+Create and save visualizations of convolutional layers.  Can use random input
+or specify an image file.
+
+Original file from:
 https://github.com/jacobgil/keras-filter-visualization/issues/1
 """
 
 from keras import backend as K
-#from keras.models import Sequential
-#from keras.layers import Conv2D, ZeroPadding2D, MaxPooling2D
-#from keras.layers.core import Flatten, Dense, Dropout
 from deep_utils import load_model
-#import tensorflow as tf
-#from PIL import Image
 import numpy as np
 import cv2
 from tqdm import tqdm

@@ -6,8 +6,6 @@ import numpy as np
 from glob import glob
 from PIL import Image
 import pickle
-import image_utils
-import matplotlib.pyplot as plt
 
 def generate_pickle_files(X,y):
     '''Generates pickle file to compress whole dataset.'''

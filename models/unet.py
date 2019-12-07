@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-unet
+Several different variations of U-Net.
 
+Original model from:
 https://github.com/zhixuhao/unet/blob/master/model.py
 """
 
@@ -9,6 +10,7 @@ from keras.models import Model
 from keras.layers import Input, Conv2D, MaxPooling2D, Dropout, concatenate, UpSampling2D, Dense, Flatten, Reshape
 from keras.optimizers import Adam
 from keras.regularizers import l2
+from losses import sil
 
 def unet_nomerge(pretrained_weights = None,input_size = (480,640,3)): #he_normal
     inputs = Input(input_size)
@@ -151,7 +153,7 @@ def unet_small(pretrained_weights = None,input_size = (480,640,3)): #he_normal
 
     model = Model(input = inputs, output = reshape10)
 
-    model.compile(optimizer = Adam(), loss = 'mean_squared_error') #lr = 1e-4
+    model.compile(optimizer = Adam(), loss = sil,metrics=['mean_squared_error']) #lr = 1e-4
     
     #model.summary()
 
@@ -271,7 +273,7 @@ def unet_big(pretrained_weights = None,input_size = (480,640,3)): #he_normal
 
     model = Model(input = inputs, output = reshape10)
 
-    model.compile(optimizer = Adam(lr = 1e-4), loss = 'mean_squared_error') #lr = 1e-4
+    model.compile(optimizer = Adam(lr = 1e-5), loss = 'mean_squared_error') #lr = 1e-4
     
     #model.summary()
 

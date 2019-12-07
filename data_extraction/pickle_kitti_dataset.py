@@ -19,7 +19,7 @@ pickle_data(dataset,output_folderpath)
 """
 import numpy as np
 from glob import glob
-from image_utils import depth_read, rgb_read
+from utils.image_utils import depth_read, rgb_read
 import pickle
 from math import ceil
 
