@@ -33,7 +33,7 @@ pip install -r requirements.txt
 python depth_estimation_nunet.py #Train & evaluate depth estimation neural network
 ```
 
-### Dataset
+### Datasets
 - [FieldSAFE](https://vision.eng.au.dk/fieldsafe/)
 - [KITTI](http://www.cvlibs.net/datasets/kitti/eval_depth.php?benchmark=depth_prediction)
 - [NYU Depth Dataset V2](https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html)
