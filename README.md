@@ -1,5 +1,5 @@
 # depth-estimation
-Depth Estimation from a Monovision Camera using a Deep Neural Network
+Practical Depth Estimation with Image Segmentation and Serial U-Nets
 
 ```
 depth-estimation
