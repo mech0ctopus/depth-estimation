@@ -32,6 +32,8 @@ git clone https://github.com/mech0ctopus/depth-estimation.git
 pip install -r requirements.txt
 python depth_estimation_nunet.py #Train & evaluate depth estimation neural network
 ```
+### Pre-trained Weights & Models
+[Download Pre-trained Weights & Models](https://mega.nz/#!69UwmQwa!hZpdDh8TndOwfVGRt8yXWnm0QMoDq7Zc9OP4OTW-XZI)
 
 ### Datasets
 - [FieldSAFE](https://vision.eng.au.dk/fieldsafe/)
