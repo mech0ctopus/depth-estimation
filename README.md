@@ -1,5 +1,5 @@
 # depth-estimation
-Depth Estimation from a Monovision Camera using a Deep Neural Network
+Practical Depth Estimation with Image Segmentation and Serial U-Nets
 
 ```
 depth-estimation
@@ -32,8 +32,10 @@ git clone https://github.com/mech0ctopus/depth-estimation.git
 pip install -r requirements.txt
 python depth_estimation_nunet.py #Train & evaluate depth estimation neural network
 ```
+### Pre-trained Weights & Models
+[Download Pre-trained Weights & Models](https://mega.nz/#!69UwmQwa!hZpdDh8TndOwfVGRt8yXWnm0QMoDq7Zc9OP4OTW-XZI)
 
-### Dataset
+### Datasets
 - [FieldSAFE](https://vision.eng.au.dk/fieldsafe/)
 - [KITTI](http://www.cvlibs.net/datasets/kitti/eval_depth.php?benchmark=depth_prediction)
 - [NYU Depth Dataset V2](https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html)
