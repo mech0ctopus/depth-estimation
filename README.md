@@ -33,7 +33,7 @@ pip install -r requirements.txt
 python depth_estimation_nunet.py #Train & evaluate depth estimation neural network
 ```
 ### Pre-trained Weights & Models
-[Download Pre-trained Weights & Models](https://mega.nz/#!69UwmQwa!hZpdDh8TndOwfVGRt8yXWnm0QMoDq7Zc9OP4OTW-XZI)
+[Download Pre-trained Weights & Models](https://mega.nz/#!nhViiYJC!1spTMi9gX8sSFM4CXL0FvViCTowRGz44J9FvFg7aMxs)
 
 ### Datasets
 - [FieldSAFE](https://vision.eng.au.dk/fieldsafe/)
