@@ -33,7 +33,7 @@ git clone https://github.com/mech0ctopus/depth-estimation.git
 pip install -r requirements.txt
 python depth_estimation_nunet.py #Train & evaluate depth estimation neural network
 
-#To run live depth estimation on webcame video stream
+#To run live depth estimation on webcam video stream
 #Download & extract pre-trained weights from link below
 cd utils
 python video_stream.py
