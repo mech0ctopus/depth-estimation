@@ -22,6 +22,7 @@ depth-estimation
 +---utils
 |       deep_utils.py
 |       image_utils.py
+|       video_stream.py
 |
 \---visualization
         conv_visualization.py
@@ -31,6 +32,11 @@ depth-estimation
 git clone https://github.com/mech0ctopus/depth-estimation.git
 pip install -r requirements.txt
 python depth_estimation_nunet.py #Train & evaluate depth estimation neural network
+
+#To run live depth estimation on webcame video stream
+#Download & extract pre-trained weights from link below
+cd utils
+python video_stream.py
 ```
 ### Pre-trained Weights & Models
 [Download Pre-trained Weights & Models](https://mega.nz/#!nhViiYJC!1spTMi9gX8sSFM4CXL0FvViCTowRGz44J9FvFg7aMxs)
