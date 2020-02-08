@@ -12,7 +12,7 @@ from glob import glob
 from utils import deep_utils
 # from utils import image_utils
 from models import models
-from keras.callbacks import TensorBoard #ModelCheckpoint
+from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.optimizers import Adam
 import datetime
 from tensorflow.compat.v1 import ConfigProto
@@ -51,11 +51,6 @@ def _batchGenerator(X_files,y_files,batchSize):
             
 def main(model=models.wnet_connected,num_epochs=5,batch_size=2):
     '''Trains depth estimation model.'''
-    
-#    checkpoint
-#    filepath="weights_latest.hdf5"
-#    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=False, mode='min')
-#    callbacks_list = [checkpoint]
           
     #Load training data
     pickle_files_folderpath=r"G:\Documents\NYU Depth Dataset\nyu_data\pickled_colorized"
@@ -77,18 +72,24 @@ def main(model=models.wnet_connected,num_epochs=5,batch_size=2):
     y_test=np.divide(y_test,255).astype(np.float16)    
     
     model=model()
-    model.compile(loss='mean_squared_error',optimizer=Adam(),metrics=['loss','val_loss','mse']) #lr=0.00001        
+    model.compile(loss='mean_squared_error',optimizer=Adam(),metrics=['mse'])      
 
+    #Save best model weights checkpoint
+    filepath="weights_latest.hdf5"
+    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+    
     #Tensorboard setup
     log_dir = r"logs\\" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")        
     tensorboard_callback = TensorBoard(log_dir=log_dir)
+    
+    callbacks_list = [checkpoint, tensorboard_callback]
     
     model.fit_generator(_batchGenerator(X_files,y_files,batch_size),
                         epochs=num_epochs,
                         steps_per_epoch=X_test.shape[0]//batch_size,
                         max_queue_size=1,
                         validation_data=(X_test,y_test),
-                        callbacks=[tensorboard_callback],
+                        callbacks=callbacks_list,
                         verbose=2)
     
     return model
