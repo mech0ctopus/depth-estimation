@@ -1,16 +1,12 @@
 # Kyle J. Cantrell & Craig D. Miller
-# kjcantrell@wpi.edu & cmiller@wpi.edu
+# kjcantrell@wpi.edu & cdmiller@wpi.edu
 # Deep Learning for Advanced Robot Perception
 #
 # Depth Estimation from RGB Images
 
 import numpy as np
-# import tensorflow as tf
-import time
 from glob import glob
-# import matplotlib.pyplot as plt
 from utils import deep_utils
-# from utils import image_utils
 from models import models
 from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.optimizers import Adam
@@ -49,7 +45,7 @@ def _batchGenerator(X_files,y_files,batchSize):
                 j+=batchSize
                 yield x,y
             
-def main(model=models.wnet_connected,num_epochs=5,batch_size=2):
+def main(model_name, model=models.wnet_connected,num_epochs=5,batch_size=2):
     '''Trains depth estimation model.'''
           
     #Load training data
@@ -75,11 +71,11 @@ def main(model=models.wnet_connected,num_epochs=5,batch_size=2):
     model.compile(loss='mean_squared_error',optimizer=Adam(),metrics=['mse'])      
 
     #Save best model weights checkpoint
-    filepath="weights_latest.hdf5"
+    filepath=f"{model_name}_weights_best.hdf5"
     checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
     
     #Tensorboard setup
-    log_dir = r"logs\\" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")        
+    log_dir = f"logs\\{model_name}\\" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")        
     tensorboard_callback = TensorBoard(log_dir=log_dir)
     
     callbacks_list = [checkpoint, tensorboard_callback]
@@ -101,7 +97,21 @@ if __name__=='__main__':
                      models.pretrained_unet_rcnn,
                      models.pretrained_unet, 
                      models.wnet, 
-                     models.wnet_connected, 
-                     ]
-    #Specify model argument to main()
-    model=main(model=training_models[4],num_epochs=40,batch_size=2)
+                     models.wnet_connected]
+    model_names=['CNN',
+                 'U-Net_CNN',
+                 'RCNN',
+                 'U-Net_RCNN',
+                 'U-Net',
+                 'W-Net',
+                 'W-Net_Connected']
+    
+    #Specify test_id argument to main()
+    test_id=1
+    model=main(model_name=model_names[test_id],model=training_models[test_id],
+               num_epochs=40,batch_size=2)
+    
+    #Save model
+    deep_utils.save_model(model,serialize_type='yaml',
+                          model_name=f'{model_names[test_id]}_nyu_model',
+                          save_weights=False)
