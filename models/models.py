@@ -2,16 +2,18 @@
 """
 Final Models.
 """
-from keras.models import Sequential, Model
-from keras.layers import Dense
-from keras.layers import Dropout, LSTM, Input
-from keras.layers import Flatten, Reshape, Concatenate
-from keras.layers.convolutional import Convolution2D, Conv2D
-from keras.layers.convolutional import MaxPooling2D
-from keras.optimizers import Adam
-from segmentation_models import Unet
-from models.losses import sil
-from models.test_loss import depth_loss_function
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dropout, LSTM, Input
+from tensorflow.keras.layers import Flatten, Reshape, Concatenate
+from tensorflow.keras.layers import Convolution2D
+from tensorflow.keras.layers import MaxPooling2D
+import segmentation_models
+
+# from models.losses import sil
+# from models.test_loss import depth_loss_function
+
+segmentation_models.set_framework('tf.keras')
 
 def cnn(input_shape=(480,640,3)):
 	'''Define CNN model'''
@@ -40,12 +42,12 @@ def cnn(input_shape=(480,640,3)):
 def pretrained_unet():
     '''Define pretrained U-Net model.'''
     #Load unet with resnet34 backbone.  Freeze imagenet weights for encoder
-    premodel = Unet('resnet34', input_shape=(480, 640, 3), encoder_weights='imagenet',encoder_freeze = True)
+    premodel = segmentation_models.Unet('resnet34', input_shape=(480, 640, 3), encoder_weights='imagenet',encoder_freeze = True)
     #Get final conv. output and skip sigmoid activation layer
     x=premodel.layers[-2].output 
     reshape=Reshape((307200,))(x)
-    model = Model(input=premodel.input, output=reshape)
-    model.compile(loss='mean_squared_error', optimizer=Adam(),metrics=['mse','msle']) #lr=1e-5, lr=5e-3
+    model = Model(inputs=premodel.input, outputs=reshape)
+    #model.compile(loss='mean_squared_error', optimizer=Adam(),metrics=['mse','msle']) #lr=1e-5, lr=5e-3
     #model.compile(loss=depth_loss_function, optimizer=Adam(),metrics=['mse','msle'])
     return model
 
@@ -53,24 +55,24 @@ def pretrained_unet_cnn():
     '''Define pretrained U-Net with CNN model.'''
     unet_cnn=Sequential()
     #Load unet with resnet34 backbone.  Freeze imagenet weights for encoder
-    premodel = Unet('resnet34', input_shape=(480, 640, 3), encoder_weights='imagenet',encoder_freeze = True)
+    premodel = segmentation_models.Unet('resnet34', input_shape=(480, 640, 3), encoder_weights='imagenet',encoder_freeze = True)
     #Get final conv. output and keep sigmoid activation layer
-    premodel=Model(input=premodel.input,output=premodel.layers[-1].output)  
+    premodel=Model(inputs=premodel.input,outputs=premodel.layers[-1].output)  
     unet_cnn.add(premodel)
     unet_cnn.add(cnn(input_shape=(480,640,1)))
 
-    unet_cnn.compile(loss='mean_squared_error', optimizer=Adam()) 
+    #unet_cnn.compile(loss='mean_squared_error', optimizer=Adam()) 
     return unet_cnn
 
 def wnet():
     #Load unet with resnet34 backbone.
     wnet=Sequential()
-    firstU = Unet('resnet34', input_shape=(480, 640, 3), encoder_weights='imagenet',encoder_freeze = True)
-    secondU = Unet('resnet34', input_shape=(480, 640, 1), encoder_weights=None)
+    firstU = segmentation_models.Unet('resnet34', input_shape=(480, 640, 3), encoder_weights='imagenet',encoder_freeze = True)
+    secondU = segmentation_models.Unet('resnet34', input_shape=(480, 640, 1), encoder_weights=None)
     #Get final conv. output and keep sigmoid activation layer
-    firstU = Model(input=firstU.input, output=firstU.layers[-1].output)
+    firstU = Model(inputs=firstU.input, outputs=firstU.layers[-1].output)
     #Get final conv. output and skip sigmoid activation layer
-    secondU=Model(input=secondU.input, output=secondU.layers[-2].output)
+    secondU=Model(inputs=secondU.input, outputs=secondU.layers[-2].output)
 #    for layer in firstU.layers:
 #        layer.trainable = False
     for layer in secondU.layers:
@@ -84,18 +86,18 @@ def wnet():
 #    wnet.layers[0].trainable=False
 #    wnet.layers[1].trainable=True
 #    wnet.layers[2].trainable=True
-    wnet.compile(loss='mean_squared_error', optimizer=Adam())
+    #wnet.compile(loss='mean_squared_error', optimizer=Adam())
     wnet.summary()
     return wnet
 
 def wnet_connected():   
     #Load unet with resnet34 backbone. (densenet201,resnet34,vgg16,resnet18,resnet152)
-    firstU = Unet('resnet34', input_shape=(480, 640, 3), encoder_weights='imagenet',encoder_freeze = True)
-    secondU = Unet('resnet34', input_shape=(480, 640, 4), encoder_weights=None)
+    firstU = segmentation_models.Unet('resnet34', input_shape=(480, 640, 3), encoder_weights='imagenet',encoder_freeze = True)
+    secondU = segmentation_models.Unet('resnet34', input_shape=(480, 640, 4), encoder_weights=None)
     #Get final conv. output and keep sigmoid activation layer
-    firstU = Model(input=firstU.input, output=firstU.layers[-1].output)
+    firstU = Model(inputs=firstU.input, outputs=firstU.layers[-1].output)
     #Get final conv. output and skip sigmoid activation layer
-    secondU=Model(input=secondU.input, output=secondU.layers[-2].output) 
+    secondU=Model(inputs=secondU.input, outputs=secondU.layers[-2].output) 
 #    for layer in firstU.layers:
 #        layer.trainable = False
     for layer in secondU.layers:
@@ -108,7 +110,7 @@ def wnet_connected():
     m2=secondU(reshape1)
     reshape2=Reshape((307200,))(m2)
     
-    wnet_c=Model(input=inputs,output=reshape2)
+    wnet_c=Model(inputs=inputs,outputs=reshape2)
     
     # Make sure that the pre-trained firstU layers are not trainable
 #    for layer in wnet_c.layers:
@@ -140,18 +142,18 @@ def rcnn_640_480(input_shape=(480,640,3)):
    rcnn.add(LSTM(512))
    rcnn.add(Dense(128,activation='relu'))
    rcnn.add(Dense(640*480,activation='linear'))
-   rcnn.compile(loss='mean_squared_error', optimizer=Adam())
+   #rcnn.compile(loss='mean_squared_error', optimizer=Adam())
    return rcnn
 
 def pretrained_unet_rcnn():
     '''Define pretrained U-Net with RCNN model.'''
     unet_rcnn=Sequential()
     #Load unet with resnet34 backbone.  Freeze imagenet weights for encoder
-    premodel = Unet('resnet34', input_shape=(480, 640, 3), encoder_weights='imagenet',encoder_freeze = True)
+    premodel = segmentation_models.Unet('resnet34', input_shape=(480, 640, 3), encoder_weights='imagenet',encoder_freeze = True)
     #Get final conv. output and keep sigmoid activation layer
-    premodel=Model(input=premodel.input,output=premodel.layers[-1].output)  
+    premodel=Model(inputs=premodel.input,outputs=premodel.layers[-1].output)  
     unet_rcnn.add(premodel)
     unet_rcnn.add(rcnn_640_480(input_shape=(480,640,1)))
 
-    unet_rcnn.compile(loss='mean_squared_error', optimizer=Adam()) 
+    #unet_rcnn.compile(loss='mean_squared_error', optimizer=Adam()) 
     return unet_rcnn
