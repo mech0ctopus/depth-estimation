@@ -87,7 +87,7 @@ def wnet():
 #    wnet.layers[1].trainable=True
 #    wnet.layers[2].trainable=True
     #wnet.compile(loss='mean_squared_error', optimizer=Adam())
-    wnet.summary()
+    #wnet.summary()
     return wnet
 
 def wnet_connected():   
