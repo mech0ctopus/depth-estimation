@@ -7,7 +7,6 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import cv2
 
-
 def image_from_np(image_array,save=False,rgb=True):
     '''Plots RGB or grayscale image from numpy array'''
     if rgb==True:
@@ -36,15 +35,23 @@ def rgb_read(filename):
 
 def depth_read(filename):
     '''Loads depth map D from png file and returns it as a numpy array'''
+    #Lower is closer
     # From KITTI devkit
+    
     image=Image.open(filename)
     depth_png = np.array(image, dtype=int)
     # make sure we have a proper 16bit depth map here.. not 8bit!
-    assert(np.max(depth_png) <= 255)
 
-    depth = depth_png.astype(np.float) / 256.
+    if depth_png.shape==(480,640,3):
+        depth_png=(depth_png[:,:,0]+depth_png[:,:,1]+depth_png[:,:,2])/3
+    
+    #depth_png=depth_png[:,:,3]
+    assert(np.max(depth_png) <= 255)
+    depth=depth_png.astype(np.float)
+    #depth = depth_png.astype(np.float) / 256.
     #depth[depth_png == 0] = -1.
     image.close()
+
     return depth
 
 def heatmap(image,save=False,name='heatmap',cmap='gray'):

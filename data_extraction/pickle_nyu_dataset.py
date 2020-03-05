@@ -6,6 +6,7 @@ import numpy as np
 from glob import glob
 from PIL import Image
 import pickle
+from utils.image_utils import depth_read
 
 def generate_pickle_files(X,y):
     '''Generates pickle file to compress whole dataset.'''
@@ -38,22 +39,26 @@ def read_data(data_folderpath,output_folderpath,num_intervals=35):
     X_filelist=glob(X_folderpath+'*.png')
     y_filelist=glob(y_folderpath+'*.png')
     
+    X_filelist.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
+    y_filelist.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
+    
     for idx in range(len(X_filelist)):
         print(f'Reading file #{idx}')
         #Load images
         rgb_image=Image.open(X_filelist[idx])
-        depth_image=Image.open(y_filelist[idx])
+        #depth_image=Image.open(y_filelist[idx])
 
         #store as np.arrays
         X[idx]=np.array(rgb_image) #.reshape(640,480,3) #Reshape is new
-        y[idx]=np.array(depth_image) #.reshape(640,480) #Reshape is new
+        #y[idx]=np.array(depth_image) #.reshape(640,480) #Reshape is new
+        y[idx]=depth_read(y_filelist[idx])
 #        if idx==1:
 ##            image_utils.image_from_np(y[idx],rgb=False)
 #            image_utils.image_from_np(X[idx])
 #            plt.imshow(y[idx], cmap='gray', interpolation='nearest')
 #            break
         rgb_image.close()
-        depth_image.close()
+        #depth_image.close()
 
     print('Splitting Data')
     y_splits=np.array_split(y,num_intervals)
@@ -68,12 +73,6 @@ def read_data(data_folderpath,output_folderpath,num_intervals=35):
         pickle.dump(X_splits[idx], open(output_folderpath+f"X_{idx}.p", "wb"), protocol=4)
     
 if __name__ == '__main__':   
-    #Pickled_new:
-        #0-34: bathroom_0001-bathroom_0015 (bathroom part 1)
-        #35-39: Labeled Sample Dataset
-    #Pickled_test:
-        #40: Sample from labeled sample dataset for validation
-    #dataset=r"E:\NYU\nyud_raw_data\nyuv2-python-toolbox-master"
-    #output_folderpath=r"G:\Documents\NYU Depth Dataset\nyu_data\pickled_new"
-    #read_data(dataset,output_folderpath)
-    pass
+    dataset=r"E:\NYU\nyud_raw_data\nyuv2-python-toolbox-master\colorized"
+    output_folderpath=r"G:\Documents\NYU Depth Dataset\nyu_data\pickled_colorized"
+    read_data(dataset,output_folderpath)

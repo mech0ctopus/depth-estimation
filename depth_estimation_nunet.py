@@ -1,122 +1,149 @@
 # Kyle J. Cantrell & Craig D. Miller
-# kjcantrell@wpi.edu & cmiller@wpi.edu
+# kjcantrell@wpi.edu & cdmiller@wpi.edu
 # Deep Learning for Advanced Robot Perception
 #
 # Depth Estimation from RGB Images
 
 import numpy as np
-import tensorflow as tf
-from keras.utils import plot_model
-import time
 from glob import glob
-import matplotlib.pyplot as plt
-from segmentation_models import Unet
 from utils import deep_utils
-from utils import image_utils
+from utils.image_utils import depth_read, rgb_read
 from models import models
-from models.losses import sil
+from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
+from tensorflow.keras.optimizers import Adam
+import datetime
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import InteractiveSession
+import segmentation_models
 
-start=time.time()
-
-#Initialize tensorflow GPU settings
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9)
-config = tf.ConfigProto(gpu_options=gpu_options)
+config = ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.9
 config.gpu_options.allow_growth = True
-session = tf.Session(config=config)
+session = InteractiveSession(config=config)
 
-# fix random seed for reproducibility
-seed = 7
-np.random.seed(seed)
+def _batchGenerator(X_filelist,y_filelist,batchSize):
+    """
+    Yield X and Y data when the batch is filled.
+    """
+    #Sort filelists to confirm they are same order
+    X_filelist.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
+    y_filelist.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
+    #Shuffle order of filenames
+    X_filelist,y_filelist=deep_utils.simul_shuffle(X_filelist,y_filelist)
 
-#Load training data
-pickle_files_folderpath=r"G:\Documents\NYU Depth Dataset\nyu_data\pickled_new"
-X_files=glob(pickle_files_folderpath+'\\X_*')
-y_files=glob(pickle_files_folderpath+'\\y_*')
-
-#Load testing data
-X_test_files=r"G:\Documents\NYU Depth Dataset\nyu_data\pickled_test\X_40.p"
-y_test_files=r"G:\Documents\NYU Depth Dataset\nyu_data\pickled_test\y_40.p"
-X_test,y_test=deep_utils.load_pickle_files(X_test_files, y_test_files)
-
-#Shuffle, reshape, and normalize testing data
-X_test,y_test=deep_utils.simul_shuffle(X_test,y_test) 
-X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], X_test.shape[2], X_test.shape[3]).astype(np.uint8)
-y_test = y_test.reshape((y_test.shape[0],1,-1)).astype(np.uint8)
-y_test = y_test.squeeze()
-X_test=np.divide(X_test,255).astype(np.float16)
-y_test=np.divide(y_test,255).astype(np.float16)
-
-num_training_batches=len(X_files)
-history=[]
-
-def main(model=models.wnet_connected,num_epochs=5,batch_size=2):
-    '''Trains depth estimation model.'''
-    #Loop through all training batches
-    for i in range(num_training_batches):  
-        print('Batch '+str(i)+': '+'Loading data')
-        X_train,y_train=deep_utils.load_pickle_files(X_files[i], y_files[i])
-        X_train,y_train=deep_utils.simul_shuffle(X_train,y_train)
+    while True:
+        idx=0
         
-        print('Batch '+str(i)+': '+'Reshaping data') #[samples][width][height][pixels]
-        X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], X_train.shape[2], X_train.shape[3]).astype(np.uint8)
-        y_train = y_train.reshape((y_train.shape[0],1,-1)).astype(np.uint8)
-        y_train = y_train.squeeze()
-             
-        print('Batch '+str(i)+': '+'Normalizing data')
-        # normalize inputs and outputs from 0-255 to 0-1
-        X_train=np.divide(X_train,255).astype(np.float16)   
-        y_train=np.divide(y_train,255).astype(np.float16)
-        
-        if i==0:
-            print('Building model')
-            model=model()
-    
-        print('Batch '+str(i)+': '+'Fitting model')
-        history.append(model.fit(X_train, y_train,validation_data=(X_test, y_test), 
-                                 epochs=num_epochs, batch_size=batch_size, verbose=2,))
-        
-        plt.figure()
-        deep_utils.plot_loss(history[i])
-        
-        #Show test image
-        if i==0:
-            image_utils.image_from_np(np.multiply(X_test[0],255).astype(np.uint8))
+        while idx<len(X_filelist):
+            X_train=np.zeros((batchSize,480,640,3),dtype=np.uint8)
+            y_train=np.zeros((batchSize,480,640),dtype=np.uint8)
             
-        #Evaluate test image and print depth prediction
-        test_image=X_test[0].reshape(1,X_test[0].shape[0],X_test[0].shape[1],X_test[0].shape[2])
-        y_est=model.predict(test_image)
-        y_est=y_est.reshape((X_train.shape[1],X_train.shape[2]))*255 #De-normalize for depth viewing
-        print('Sample image, Batch '+str(i))
-        image_utils.heatmap(y_est,save=True,name='Batch '+str(i))
+            for i in range(batchSize):
+                #Load images
+                X_train[i]=rgb_read(X_filelist[idx+i])
+                y_train[i]=depth_read(y_filelist[idx+i])
     
-    print(model.summary())
-    finish=time.time()
-    elapsed=finish-start
-    print('Runtime :'+str(elapsed)+' seconds')
-    
-    deep_utils.plot_full_val_loss(history)
-    
-    #Save model, weights, and architecture
-    deep_utils.save_model(model,serialize_type='yaml',model_name='depth_estimation_unet_nyu_model')
-    plot_model(model, to_file='model.png')
+            #Reshape [samples][width][height][pixels]
+            X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 
+                                      X_train.shape[2], X_train.shape[3]).astype(np.uint8)
+
+            y_train = y_train.reshape((y_train.shape[0],1,-1)).astype(np.uint8)
+            y_train = y_train.squeeze()
+                 
+            # normalize inputs and outputs from 0-255 to 0-1
+            X_train=np.divide(X_train,255).astype(np.float16)   
+            y_train=np.divide(y_train,255).astype(np.float16)
+            
+            if (idx % 1024)==0:
+                print(str(idx)+'/'+str(len(X_filelist)))
+                
+            idx+=batchSize
+            
+            yield X_train, y_train
+            
+def _valBatchGenerator(X_val_filelist,y_val_filelist,batchSize):
+    """
+    Yield X and Y data when the batch is filled.
+    """
+    #Sort filelists to confirm they are same order
+    X_val_filelist.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
+    y_val_filelist.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
+    #Shuffle order of filenames
+    X_val_filelist,y_val_filelist=deep_utils.simul_shuffle(X_val_filelist,y_val_filelist)
+
+    while True:
+        idx=0
         
-    #Show a few test image and predicted depth results
-    for i in [0,1,2]:  
-        image_utils.image_from_np(np.multiply(X_test[i],255).astype(np.uint8))  #De-normalize for viewing
-        test_image=X_test[i].reshape(1,X_test[i].shape[0],X_test[i].shape[1],X_test[i].shape[2])
-        y_est=model.predict(test_image)
-        y_est=y_est.reshape((X_train.shape[1],X_train.shape[2]))*255 #De-normalize for depth viewing
-        print('Sample image, X_test['+str(i)+']:')
-        image_utils.heatmap(y_est)
+        while idx<len(X_val_filelist):
+            X_val=np.zeros((batchSize,480,640,3),dtype=np.uint8)
+            y_val=np.zeros((batchSize,480,640),dtype=np.uint8)
+            
+            for i in range(batchSize):
+                #Load images
+                X_val[i]=rgb_read(X_val_filelist[idx+i])
+                y_val[i]=depth_read(y_val_filelist[idx+i])
     
-    #Test a new image outside of training & testing dataset
-    test_image=image_utils.rgb_read(r"C:\Users\Craig\Desktop\test5.png") #640x480
-    test_image=test_image.reshape(1,X_test[0].shape[0],X_test[0].shape[1],X_test[0].shape[2])
-    test_image=np.divide(test_image,255).astype(np.float16) #Normalize for prediction
-    y_est=model.predict(test_image)
-    y_est=y_est.reshape((X_train.shape[1],X_train.shape[2]))*255 #De-normalize for depth viewing
-    print('New Test Image:')
-    image_utils.heatmap(y_est)
+            #Reshape [samples][width][height][pixels]
+            X_val = X_val.reshape(X_val.shape[0], X_val.shape[1], 
+                                  X_val.shape[2], X_val.shape[3]).astype(np.uint8)
+
+            y_val = y_val.reshape((y_val.shape[0],1,-1)).astype(np.uint8)
+            y_val = y_val.squeeze()
+                 
+            # normalize inputs and outputs from 0-255 to 0-1
+            X_val=np.divide(X_val,255).astype(np.float16)   
+            y_val=np.divide(y_val,255).astype(np.float16)
+            
+            if (idx % 1024)==0:
+                print(str(idx)+'/'+str(len(X_val_filelist)))
+                
+            idx+=batchSize
+            
+            yield X_val, y_val
+            
+def main(model_name, model=models.wnet_connected,num_epochs=5,batch_size=2):
+    '''Trains depth estimation model.'''
+    
+    segmentation_models.set_framework('tf.keras')
+    print(segmentation_models.framework())
+    
+    #Build list of training filenames
+    X_folderpath=r"G:\WPI\Courses\2019\Deep Learning for Advanced Robot Perception, RBE595\Project\VEHITS\Data\Train\X_rgb\\"
+    y_folderpath=r"G:\WPI\Courses\2019\Deep Learning for Advanced Robot Perception, RBE595\Project\VEHITS\Data\Train\y_depth\\"
+    X_filelist=glob(X_folderpath+'*.png')
+    y_filelist=glob(y_folderpath+'*.png')
+    
+    #Build list of validation filenames
+    X_val_folderpath=r"G:\WPI\Courses\2019\Deep Learning for Advanced Robot Perception, RBE595\Project\VEHITS\Data\Val\X_rgb\\"
+    y_val_folderpath=r"G:\WPI\Courses\2019\Deep Learning for Advanced Robot Perception, RBE595\Project\VEHITS\Data\Val\y_depth\\"
+    X_val_filelist=glob(X_val_folderpath+'*.png')
+    y_val_filelist=glob(y_val_folderpath+'*.png')
+    
+    model=model()
+    model.compile(loss='mean_squared_error',optimizer=Adam(lr=1e-5)) #,metrics=['mse']
+
+    #Save best model weights checkpoint
+    filepath=f"{model_name}_weights_best.hdf5"
+    checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, 
+                                 save_best_only=True, mode='min')
+    
+    #Tensorboard setup
+    log_dir = f"logs\\{model_name}\\" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")        
+    tensorboard_callback = TensorBoard(log_dir=log_dir)
+    
+    callbacks_list = [checkpoint, tensorboard_callback]
+    
+    model.fit_generator(_batchGenerator(X_filelist,y_filelist,batch_size),
+                        epochs=num_epochs,
+                        steps_per_epoch=len(X_filelist)//batch_size,
+                        #validation_data=(X_test,y_test),
+                        validation_data=_valBatchGenerator(X_val_filelist,y_val_filelist,batch_size),
+                        validation_steps=len(X_val_filelist)//batch_size,
+                        max_queue_size=1,
+                        callbacks=callbacks_list,
+                        verbose=2)
+    
+    return model
     
 if __name__=='__main__':
     training_models=[models.cnn, 
@@ -125,7 +152,26 @@ if __name__=='__main__':
                      models.pretrained_unet_rcnn,
                      models.pretrained_unet, 
                      models.wnet, 
-                     models.wnet_connected, 
-                     ]
-    #Specify model argument to main()
-    main(model=training_models[6])
+                     models.wnet_connected]
+    model_names=['CNN',
+                 'U-Net_CNN',
+                 'RCNN',
+                 'U-Net_RCNN',
+                 'U-Net',
+                 'W-Net',
+                 'W-Net_Connected']
+    
+    #Specify test_id argument to main()
+    test_id=6
+    
+    model=main(model_name=model_names[test_id],model=training_models[test_id],
+               num_epochs=20,batch_size=2)
+    
+    #Save model
+    deep_utils.save_model(model,serialize_type='yaml',
+                          model_name=f'{model_names[test_id]}_nyu_model',
+                          save_weights=False)
+    
+    deep_utils.save_model(model,serialize_type='json',
+                          model_name=f'{model_names[test_id]}_nyu_model',
+                          save_weights=False)

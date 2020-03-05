@@ -7,11 +7,13 @@ import numpy as np
 import deep_utils
 import image_utils
 import time
-    
-def video_stream(model,weights,method='cv2',mirror=True):
+from models import models
+from tensorflow.keras.optimizers import Adam
+  
+def video_stream(model,method='cv2',mirror=True):
     '''Runs depth estimation on live webcam video stream'''
     #Load model
-    model=deep_utils.load_model(model,weights)
+    #model=deep_utils.load_model(model,weights)
     cam = cv2.VideoCapture(0)
     
     while True:
@@ -49,15 +51,18 @@ def video_stream(model,weights,method='cv2',mirror=True):
     cv2.destroyAllWindows()
     
 if __name__=='__main__':
-    display_methods=['cv2','heatmap']
-    test_model='wnetc'
+    #Load weights (h5)
+    weights={'unet':r"G:\WPI\Courses\2019\Deep Learning for Advanced Robot Perception, RBE595\Project\VEHITS\Weights & Models\20Epochs_NoAugment_LowerLR\20200213-065621\U-Net_weights_best.hdf5",
+            'wnet':r"G:\WPI\Courses\2019\Deep Learning for Advanced Robot Perception, RBE595\Project\VEHITS\Weights & Models\20Epochs_NoAugment_LowerLR\20200213-082137\W-Net_weights_best.hdf5",
+            'wnet_c':r"G:\WPI\Courses\2019\Deep Learning for Advanced Robot Perception, RBE595\Project\VEHITS\Weights & Models\20Epochs_NoAugment_LowerLR\20200212-205108\W-Net_Connected_weights_best.hdf5"
+             }
     
-    #Test using pretrained models & weights
-    if test_model=='wnetc':
-        model=r"Weights & Models\200 Epochs\W-Net Connected\MSE\1e-3\depth_estimation_wnetc_mse_nyu_model.yaml"
-        weights=r"Weights & Models\200 Epochs\W-Net Connected\MSE\1e-3\depth_estimation_wnetc_mse_nyu_model.h5"
-    elif test_model=='unet':
-        model=r"Weights & Models\200 Epochs\U-Net\MSE\1e-3\depth_estimation_unet_mse_nyu_model.yaml"
-        weights=r"Weights & Models\200 Epochs\U-Net\MSE\1e-3\depth_estimation_unet_mse_nyu_model.h5"
+    display_methods=['cv2','heatmap']
+    
+    model_name='wnet_c'
+    model=models.wnet_connected()
 
-    video_stream(model,weights,method=display_methods[0],mirror=True)
+    model.compile(loss='mean_squared_error',optimizer=Adam(),metrics=['mse']) 
+    model.load_weights(weights['wnet_c'])
+
+    video_stream(model,method=display_methods[0],mirror=True)

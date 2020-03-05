@@ -8,7 +8,7 @@ import pickle
 import matplotlib.pyplot as plt
 import random
 
-def save_model(model,serialize_type,model_name='model'):
+def save_model(model,serialize_type,model_name='model',save_weights=False):
     '''Saves model and weights to file.'''
     serialize_type=serialize_type.lower()
     
@@ -20,9 +20,11 @@ def save_model(model,serialize_type,model_name='model'):
         model_json = model.to_json()
         with open(model_name+".json", "w") as json_file:
             json_file.write(model_json)
-    model.save_weights(model_name+".h5")
-    
-    print(model_name+' & weights saved to disk.')
+    if save_weights:
+        model.save_weights(model_name+".h5")
+        print(model_name+' & weights saved to disk.')
+    else:
+        print(model_name+' saved to disk.')
 
 def load_model(model_filepath,weights_filepath):
     '''Loads model and weights to file.'''
@@ -63,10 +65,16 @@ def load_pickle_files(X_file, y_file):
 
 def simul_shuffle(mat1, mat2):
     '''Shuffles two matrices in the same order'''
-    idx=np.arange(0,mat1.shape[0])
-    random.shuffle(idx)
-    mat1=mat1[idx]
-    mat2=mat2[idx]
+    
+    if type(mat1)==list:
+        temp = list(zip(mat1, mat2)) 
+        random.shuffle(temp) 
+        mat1, mat2 = zip(*temp)
+    else:
+        idx=np.arange(0,mat1.shape[0])   
+        random.shuffle(idx)
+        mat1=mat1[idx]
+        mat2=mat2[idx]
     return mat1, mat2
     
 def plot_accuracy(history):
