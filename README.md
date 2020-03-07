@@ -1,9 +1,13 @@
 # depth-estimation
 Practical Depth Estimation with Image Segmentation and Serial U-Nets
 
+![Depth Estimate](depth_estimate.PNG)
+
+
 ```
 depth-estimation
 |   depth_estimation_nunet.py <--- main file
+|	depth_estimate.png
 |   inference_timer.py
 |   prediction_comparison.py
 |   README.md
