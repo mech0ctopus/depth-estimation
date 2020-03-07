@@ -7,7 +7,7 @@ Practical Depth Estimation with Image Segmentation and Serial U-Nets
 ```
 depth-estimation
 |   depth_estimation_nunet.py <--- main file
-|	depth_estimate.png
+|   depth_estimate.png
 |   inference_timer.py
 |   prediction_comparison.py
 |   README.md
