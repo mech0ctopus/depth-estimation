@@ -21,10 +21,11 @@ depth-estimation
 +---models
 |       losses.py
 |       models.py
-|       unet.py
 |
 +---utils
+|       data_generator.py
 |       deep_utils.py
+|       fill_depth_colorization.py
 |       image_utils.py
 |       video_stream.py
 |
@@ -39,11 +40,11 @@ python depth_estimation_nunet.py #Train & evaluate depth estimation neural netwo
 
 #To run live depth estimation on webcam video stream
 #Download & extract pre-trained weights from link below
-cd utils
+cd depth-estimation\utils
 python video_stream.py
 ```
-### Pre-trained Weights & Models
-[Download Pre-trained Weights & Models](https://mega.nz/#!nhViiYJC!1spTMi9gX8sSFM4CXL0FvViCTowRGz44J9FvFg7aMxs)
+### Pre-trained Weights
+[Download Pre-trained Weights](https://mega.nz/#!y9E1lC7S!UATGE-izPvmzfm_bWeGTkPb9tmoAS8pP4P72iyTQ2pQ)
 
 ### Datasets
 - [FieldSAFE](https://vision.eng.au.dk/fieldsafe/)
