@@ -7,7 +7,7 @@
 import numpy as np
 from glob import glob
 from utils import deep_utils
-from utils.image_utils import depth_read, rgb_read
+from utils.image_utils import depth_read, rgb_read, depth_read_kitti
 from models import models
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
@@ -35,14 +35,15 @@ def _batchGenerator(X_filelist,y_filelist,batchSize):
         idx=0
         
         while idx<len(X_filelist):
-            X_train=np.zeros((batchSize,480,640,3),dtype=np.uint8)
-            y_train=np.zeros((batchSize,480,640),dtype=np.uint8)
+            X_train=np.zeros((batchSize,192,640,3),dtype=np.uint8)
+            y_train=np.zeros((batchSize,192,640),dtype=np.uint8)
             
             for i in range(batchSize):
                 #Load images
                 X_train[i]=rgb_read(X_filelist[idx+i])
-                y_train[i]=depth_read(y_filelist[idx+i])
-    
+                #y_train[i]=depth_read(y_filelist[idx+i])
+                y_train[i]=depth_read_kitti(y_filelist[idx+i])
+                
             #Reshape [samples][width][height][pixels]
             X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 
                                       X_train.shape[2], X_train.shape[3]).astype(np.uint8)
@@ -75,13 +76,14 @@ def _valBatchGenerator(X_val_filelist,y_val_filelist,batchSize):
         idx=0
         
         while idx<len(X_val_filelist):
-            X_val=np.zeros((batchSize,480,640,3),dtype=np.uint8)
-            y_val=np.zeros((batchSize,480,640),dtype=np.uint8)
+            X_val=np.zeros((batchSize,192,640,3),dtype=np.uint8)
+            y_val=np.zeros((batchSize,192,640),dtype=np.uint8)
             
             for i in range(batchSize):
                 #Load images
                 X_val[i]=rgb_read(X_val_filelist[idx+i])
-                y_val[i]=depth_read(y_val_filelist[idx+i])
+                #y_val[i]=depth_read(y_val_filelist[idx+i])
+                y_val[i]=depth_read_kitti(y_val_filelist[idx+i])
     
             #Reshape [samples][width][height][pixels]
             X_val = X_val.reshape(X_val.shape[0], X_val.shape[1], 
@@ -108,19 +110,19 @@ def main(model_name, model=models.wnet_connected,num_epochs=5,batch_size=2):
     print(segmentation_models.framework())
     
     #Build list of training filenames
-    X_folderpath=r"G:\WPI\Courses\2019\Deep Learning for Advanced Robot Perception, RBE595\Project\VEHITS\Data\Train\X_rgb\\"
-    y_folderpath=r"G:\WPI\Courses\2019\Deep Learning for Advanced Robot Perception, RBE595\Project\VEHITS\Data\Train\y_depth\\"
+    X_folderpath=r"G:\Documents\KITTI\data\train\X\\"
+    y_folderpath=r"G:\Documents\KITTI\data\train\y\\"
     X_filelist=glob(X_folderpath+'*.png')
     y_filelist=glob(y_folderpath+'*.png')
     
     #Build list of validation filenames
-    X_val_folderpath=r"G:\WPI\Courses\2019\Deep Learning for Advanced Robot Perception, RBE595\Project\VEHITS\Data\Val\X_rgb\\"
-    y_val_folderpath=r"G:\WPI\Courses\2019\Deep Learning for Advanced Robot Perception, RBE595\Project\VEHITS\Data\Val\y_depth\\"
+    X_val_folderpath=r"G:\Documents\KITTI\data\val\X\\"
+    y_val_folderpath=r"G:\Documents\KITTI\data\val\y\\"
     X_val_filelist=glob(X_val_folderpath+'*.png')
     y_val_filelist=glob(y_val_folderpath+'*.png')
     
     model=model()
-    model.compile(loss='mean_squared_error',optimizer=Adam(lr=1e-5)) #,metrics=['mse']
+    model.compile(loss='mean_squared_error',optimizer=Adam(lr=1e-4)) #,metrics=['mse']
 
     #Save best model weights checkpoint
     filepath=f"{model_name}_weights_best.hdf5"
@@ -165,7 +167,7 @@ if __name__=='__main__':
     test_id=6
     
     model=main(model_name=model_names[test_id],model=training_models[test_id],
-               num_epochs=20,batch_size=2)
+               num_epochs=35,batch_size=2)
     
     #Save model
     deep_utils.save_model(model,serialize_type='yaml',

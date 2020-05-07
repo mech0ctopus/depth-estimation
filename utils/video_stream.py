@@ -24,17 +24,20 @@ def video_stream(model,method='cv2',mirror=True):
             img = cv2.flip(img, 1)
             
         #Resize image
-        img=cv2.resize(img,(int(640),int(480)))
-        img=img.reshape(1,480,640,3)
+        img=img[288:480,:]
+        #img=cv2.resize(img,(int(640),int(192)))
+        img=img.reshape(1,192,640,3)
         img=np.divide(img,255).astype(np.float16)
         #Predict depth
         y_est=model.predict(img)
-        y_est=y_est.reshape((480,640)) #cv2 maps 0-1 to 0-255
+        y_est=y_est.reshape((192,640)) #cv2 maps 0-1 to 0-255
 
         #Show depth prediction results
         if method=='cv2':
             #Map 2D grayscale to RGB equivalent
-            vis = cv2.cvtColor(y_est.astype(np.float32), cv2.COLOR_GRAY2BGR)
+            vis=cv2.cvtColor(y_est, cv2.COLOR_GRAY2BGR)
+            #vis=cv2.cvtColor(vis, cv2.COLOR_BGR2HSV)
+            
             cv2.imshow('Depth Estimate', vis)
         elif method=='heatmap':
             image_utils.heatmap(y_est,cmap='plasma')
@@ -54,7 +57,7 @@ if __name__=='__main__':
     #Load weights (h5)
     weights={'unet':r"G:\WPI\Courses\2019\Deep Learning for Advanced Robot Perception, RBE595\Project\VEHITS\Weights & Models\20Epochs_NoAugment_LowerLR\20200213-065621\U-Net_weights_best.hdf5",
             'wnet':r"G:\WPI\Courses\2019\Deep Learning for Advanced Robot Perception, RBE595\Project\VEHITS\Weights & Models\20Epochs_NoAugment_LowerLR\20200213-082137\W-Net_weights_best.hdf5",
-            'wnet_c':r"G:\WPI\Courses\2019\Deep Learning for Advanced Robot Perception, RBE595\Project\VEHITS\Weights & Models\20Epochs_NoAugment_LowerLR\20200212-205108\W-Net_Connected_weights_best.hdf5"
+            'wnet_c':r"C:\Users\Craig\Documents\GitHub\depth-estimation\W-Net_Connected_weights_best_KITTI_35Epochs.hdf5"
              }
     
     display_methods=['cv2','heatmap']
@@ -62,7 +65,9 @@ if __name__=='__main__':
     model_name='wnet_c'
     model=models.wnet_connected()
 
+    print('Compiling model')
     model.compile(loss='mean_squared_error',optimizer=Adam(),metrics=['mse']) 
+    print('Loading weights')
     model.load_weights(weights['wnet_c'])
-
+    print('Starting Video Stream')
     video_stream(model,method=display_methods[0],mirror=True)

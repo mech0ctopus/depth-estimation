@@ -92,8 +92,8 @@ def wnet():
 
 def wnet_connected():   
     #Load unet with resnet34 backbone. (densenet201,resnet34,vgg16,resnet18,resnet152)
-    firstU = segmentation_models.Unet('resnet34', input_shape=(480, 640, 3), encoder_weights='imagenet',encoder_freeze = True)
-    secondU = segmentation_models.Unet('resnet34', input_shape=(480, 640, 4), encoder_weights=None)
+    firstU = segmentation_models.Unet('resnet50', input_shape=(192, 640, 3), encoder_weights='imagenet',encoder_freeze = True)
+    secondU = segmentation_models.Unet('resnet50', input_shape=(192, 640, 4), encoder_weights=None)
     #Get final conv. output and keep sigmoid activation layer
     firstU = Model(inputs=firstU.input, outputs=firstU.layers[-1].output)
     #Get final conv. output and skip sigmoid activation layer
@@ -103,12 +103,12 @@ def wnet_connected():
     for layer in secondU.layers:
         layer.trainable = True
     
-    inputs = Input((480,640,3))
+    inputs = Input((192, 640, 3))
     m1=firstU(inputs)
     merged=Concatenate()([inputs,m1])
-    reshape1=Reshape((480,640,4))(merged)
+    reshape1=Reshape((192, 640, 4))(merged)
     m2=secondU(reshape1)
-    reshape2=Reshape((307200,))(m2)
+    reshape2=Reshape((192*640,))(m2)
     
     wnet_c=Model(inputs=inputs,outputs=reshape2)
     
