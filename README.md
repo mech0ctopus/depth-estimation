@@ -43,30 +43,29 @@ pip install -r requirements.txt
 ```
 
 ### Use Pre-Trained Network on Webcam
-#To run live depth estimation on webcam video stream
-#Download & extract pre-trained weights from link below
-#Verify input shapes are correct (NYU: 480x640, Re-sized KITTI: 192x640)
+1. Download & extract pre-trained weights from link below
+2. Verify input shapes are correct (NYU: 480x640, Re-sized KITTI: 192x640)
 ```
 cd depth-estimation\utils
 python video_stream.py
 ```
 
 ### Use Pre-Trained Network on RGB Video
-#Download & extract pre-trained weights from link below
-#Verify input shapes are correct (NYU: 480x640, Re-sized KITTI: 192x640)
+1. Download & extract pre-trained weights from link below
+2. Verify input shapes are correct (NYU: 480x640, Re-sized KITTI: 192x640)
 ```
 cd depth-estimation\models
 python video_depth_writer.py
 ```
 
 ### Training
-#Download NYU Depth V2 or KITTI images from link below
-#(Optional, for NYU Depth V2) Colorize depth images
+1. Download NYU Depth V2 or KITTI images from link below
+2. (Optional, for NYU Depth V2) Colorize depth images
 ```
 python utils\fill_depth_colorization.py
 ```
-#Update training & validation folderpaths
-#Verify input shapes are correct (NYU: 480x640, Re-sized KITTI: 192x640)
+3. Update training & validation folderpaths
+4. Verify input shapes are correct (NYU: 480x640, Re-sized KITTI: 192x640)
 ```
 python depth_estimation_nunet.py #Train & evaluate depth estimation neural network
 ```
