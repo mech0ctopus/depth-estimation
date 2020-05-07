@@ -8,7 +8,7 @@ Practical Depth Estimation with Image Segmentation and Serial U-Nets
 ```
 depth-estimation
 |   depth_estimation_nunet.py <--- main file
-|	depth_estimate.png
+|   depth_estimate.png
 |   inference_timer.py
 |   prediction_comparison.py
 |   README.md
@@ -37,6 +37,10 @@ depth-estimation
 ```
 git clone https://github.com/mech0ctopus/depth-estimation.git
 pip install -r requirements.txt
+#Download & extract NYU Depth V2 images from link below
+#(Optional) Colorize depth images
+python utils\fill_depth_colorization.py
+#Update training & validation folderpaths
 python depth_estimation_nunet.py #Train & evaluate depth estimation neural network
 
 #To run live depth estimation on webcam video stream
