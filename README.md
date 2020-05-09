@@ -58,7 +58,7 @@ cd depth-estimation\models
 python video_depth_writer.py
 ```
 
-### Training
+###  Train Depth Estimation Network
 1. Download NYU Depth V2 or KITTI images from link below
 2. (Optional, for NYU Depth V2) Colorize depth images
 ```
@@ -67,13 +67,18 @@ python utils\fill_depth_colorization.py
 3. Update training & validation folderpaths
 4. Verify input shapes are correct (NYU: 480x640, Re-sized KITTI: 192x640)
 ```
-python depth_estimation_nunet.py #Train & evaluate depth estimation neural network
+python depth_estimation_nunet.py
+```
+5. View Results in Tensorboard.
+```
+cd depth-estimation
+tensorboard --logdir logs
 ```
 
 ### Pre-trained Weights
 - [Download Pre-trained Weights (NYU Depth V2, ResNet34 Backbones, 480x640 Images)](https://mega.nz/#!y9E1lC7S!UATGE-izPvmzfm_bWeGTkPb9tmoAS8pP4P72iyTQ2pQ)
 
-- [Download Pre-trained Weights (KITTI, ResNet50 Backbones, 192x640 Images)](https://mega.nz/#!y9E1lC7S!UATGE-izPvmzfm_bWeGTkPb9tmoAS8pP4P72iyTQ2pQ)
+- [Download Pre-trained Weights (KITTI, ResNet50 Backbones, 192x640 Images)](https://mega.nz/file/L8kHRZSQ#sbZyujgm9CUJL1vdw9D4L6JtTLfS7IzoLtT7mDzI63I)
 
 ### Download Pre-processed KITTI Dataset
 [Download Pre-processed KITTI RGB and Depth Images (Re-sized and colorized) Training Images (5.5GB)](https://mega.nz/file/O1sn3TQQ#fbXlhG5T8Ad30CTtfwvKyKfgDyH3Aa2tq_fSoYhTA0U)
