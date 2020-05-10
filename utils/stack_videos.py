@@ -4,7 +4,6 @@ Stacks videos vertically or horizontally.
 """
 import cv2
 import numpy as np
-
   
 def stack_videos(filename1,filename2, out_FPS=10, output_filename=r'output_stack.avi',
                  stack_direction='vertical'):

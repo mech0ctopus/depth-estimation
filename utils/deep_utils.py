@@ -7,6 +7,7 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 import random
+from tensorflow.keras.optimizers import Adam
 
 def save_model(model,serialize_type,model_name='model',save_weights=False):
     '''Saves model and weights to file.'''
@@ -25,6 +26,13 @@ def save_model(model,serialize_type,model_name='model',save_weights=False):
         print(model_name+' & weights saved to disk.')
     else:
         print(model_name+' saved to disk.')
+
+    
+def load_model_weights(model, weights):
+    '''Loads pretrained and compiled model.'''
+    model.compile(loss='mean_squared_error',optimizer=Adam(),metrics=['mse']) 
+    model.load_weights(weights)
+    return model
 
 def load_model(model_filepath,weights_filepath):
     '''Loads model and weights to file.'''

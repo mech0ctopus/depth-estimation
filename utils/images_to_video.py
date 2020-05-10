@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Build video sequence from images
+Build video from image sequence.
 """
 import cv2
 from glob import glob
   
-def images_to_video(folderpath,output_filename=r'camera_cal.avi',out_FPS=10,width=640,height=480):
-    '''Runs depth estimation video'''
+def images_to_video(folderpath,output_filename=r'output_video.avi',out_FPS=10,width=640,height=480):
+    '''Converts all images in a folder into video.'''
 
     images=glob(folderpath+'*.jpg')
     
@@ -22,4 +22,4 @@ def images_to_video(folderpath,output_filename=r'camera_cal.avi',out_FPS=10,widt
     
 if __name__=='__main__':
     folderpath=r"D:\rpi_cal_files\\"
-    images_to_video(folderpath)
+    images_to_video(folderpath,output_filename=r'camera_cal.avi',out_FPS=10,width=640,height=480)

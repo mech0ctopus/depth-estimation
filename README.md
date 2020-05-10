@@ -3,7 +3,7 @@ Practical Depth Estimation with Image Segmentation and Serial U-Nets
 
 ![Depth Estimate](depth_estimate.PNG)
 
-![Car Depth Estimate](car_gif.gif)
+![Car Depth Estimate](kitti.gif)
 
 **Depth Estimates on KITTI Validation Data**
 
@@ -12,6 +12,7 @@ depth-estimation
 |   depth_estimation_nunet.py <--- main file
 |   depth_estimate.png
 |   inference_timer.py
+|   kitti.gif
 |   prediction_comparison.py
 |   README.md
 |   requirements.txt
@@ -25,15 +26,16 @@ depth-estimation
 |       losses.py
 |       models.py
 |
-+---utils
-|       data_generator.py
-|       deep_utils.py
-|       fill_depth_colorization.py
-|       image_utils.py
-|       video_stream.py
-|
-\---visualization
-        conv_visualization.py
+\---utils
+        augmented_data_generator.py
+        deep_utils.py
+        fill_depth_colorization.py
+        image_utils.py
+        images_2_video.py
+        rgb2depth.py
+        rgb2depth_stream.py
+        stack_videos.py
+
 ```
 
 ### Initial Setup
@@ -44,18 +46,18 @@ pip install -r requirements.txt
 
 ### Use Pre-Trained Network on Webcam
 1. Download & extract pre-trained weights from link below
-2. Verify input shapes are correct (NYU: 480x640, Re-sized KITTI: 192x640)
+2. Run rgb2depth_stream.
 ```
-cd depth-estimation\utils
-python video_stream.py
+cd depth-estimation
+python utils\rgb2depth_stream.py
 ```
 
 ### Use Pre-Trained Network on RGB Video
 1. Download & extract pre-trained weights from link below
-2. Verify input shapes are correct (NYU: 480x640, Re-sized KITTI: 192x640)
+2. Run video_depth_writer.
 ```
-cd depth-estimation\models
-python video_depth_writer.py
+cd depth-estimation
+python utils\video_depth_writer.py
 ```
 
 ###  Train Depth Estimation Network
