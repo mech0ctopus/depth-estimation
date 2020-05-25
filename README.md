@@ -41,11 +41,12 @@ depth-estimation
 ### Initial Setup
 ```
 git clone https://github.com/mech0ctopus/depth-estimation.git
+cd depth-estimation
 pip install -r requirements.txt
 ```
 
 ### Use Pre-Trained Network on Webcam
-1. Download & extract pre-trained weights from link below
+1. Download & extract pre-trained weights from link below. Place in depth-estimation folder.
 2. Run rgb2depth_stream.
 ```
 cd depth-estimation
@@ -53,7 +54,7 @@ python utils\rgb2depth_stream.py
 ```
 
 ### Use Pre-Trained Network on RGB Video
-1. Download & extract pre-trained weights from link below
+1. Download & extract pre-trained weights from link below. Place in depth-estimation folder.
 2. Run video_depth_writer.
 ```
 cd depth-estimation
@@ -91,3 +92,18 @@ tensorboard --logdir logs
 - [FieldSAFE](https://vision.eng.au.dk/fieldsafe/)
 - [KITTI](http://www.cvlibs.net/datasets/kitti/eval_depth.php?benchmark=depth_prediction)
 - [NYU Depth Dataset V2](https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html)
+
+### Citation
+```
+@conference{vehits20,
+author={Kyle J. Cantrell. and Craig D. Miller. and Carlos W. Morato.},
+title={Practical Depth Estimation with Image Segmentation and Serial U-Nets},
+booktitle={Proceedings of the 6th International Conference on Vehicle Technology and Intelligent Transport Systems - Volume 1: VEHITS,},
+year={2020},
+pages={406-414},
+publisher={SciTePress},
+organization={INSTICC},
+doi={10.5220/0009781804060414},
+isbn={978-989-758-419-0},
+}
+```
